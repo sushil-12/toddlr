@@ -113,7 +113,7 @@ const seedDomains = async () => {
         if (existingDomains.length === 0) {
             // Create sample domains
             const domains = [
-                { name: 'he_group', title:"He-GROUP", href: 'http://hegroup.com' },
+                { name: 'he_group', title:"He-GROUP", href: 'http://tofflr.com' },
                 { name: 'the_logician',title:"THE-LOGICIAN", href: 'http://logician.com' },
                 { name: 'x_wear',title:"X-WEAR", href: 'http://xwear.com' },
             ];

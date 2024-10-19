@@ -1,7 +1,7 @@
 const getAppLogoMarkup = (img_path) => {
   return `
     <div style="display:flex; justify-content:center; ">
-      <img src="${img_path}" alt="hegroup-logo" />
+      <img src="${img_path}" alt="tofflr-logo" />
       <h1 class="text-white font-inter text-md" style="color:white; font-size:14px; margin-left:4px;">HE GROUP</h1>
     </div>
   `;

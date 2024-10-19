@@ -43,22 +43,6 @@ app.use(useragent.express());
 // Applying the rate limiter to all requests
 // app.use(limiter);
 
-// Ensure the /tmp/logs directory exists
-const logDir = path.join('/tmp', 'logs');
-if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true });
-}
-
-// Basic authentication for logs
-app.use('/logs', basicAuth({
-    users: { 'admin': process.env.PASSWORD_BACKEND }, // Replace with your username and password
-    challenge: true,
-    unauthorizedResponse: (req) => 'Unauthorized'
-}));
-
-// Serve the logs directory publicly with file listing
-app.use('/logs', express.static(logDir), serveIndex(logDir, { icons: true }));
-
 // Serve static assets
 app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
 

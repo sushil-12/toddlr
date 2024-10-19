@@ -13,7 +13,7 @@ const customFormat = printf(({ level, message, timestamp }) => {
 
 // Define the log directory and log file path in the /tmp directory
 const logDir = process.env.APP_ENV === 'local' ? path.join(__dirname, 'logs') : '/tmp/logs';
-const logFilePath = path.join(logDir, 'hegroup-cms-%DATE%.log');
+const logFilePath = path.join(logDir, 'tofflr-cms-%DATE%.log');
 
 
 

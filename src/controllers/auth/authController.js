@@ -30,6 +30,26 @@ const generateRandomString = (length) => {
 };
 
 const register = async (req, res) => {
+  // const resettemplateFilePath = path.join(__dirname, '..', '..', 'email-templates', 'reset-password.hbs');
+  // const templateFile = fs.readFileSync(resettemplateFilePath, 'utf8');
+  // const template = handlebars.compile(templateFile);
+  // const mailOptions = {
+  //   from: `"${'app_name'}" <${process.env.EMAIL_FROM}>`,
+  //   to: 'sushil124maurya@gmail.com',
+  //   subject: 'Password Reset',
+  //   html: template({ name: "sdsd", resetLink: "resetLink", app_logo: "app_logo", app_name: "app_name" })
+  // };
+ 
+  // // Send email
+  // sendMail(mailOptions)
+  //   .then(() => {
+  //     ResponseHandler.success(res, { reset_link_sent: true, message: "Reset link sent successfully" }, HTTP_STATUS_CODES.OK);
+  //   })
+  //   .catch((error) => {
+  //     console.log(error)
+  //     ResponseHandler.error(res, { reset_link_sent: false, message: "Failed to send Reset link" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+  //   });
+
   try {
     AuthValidator.validateRegistration(req.body);
     const { username, password, email, phoneNumber } = req.body;

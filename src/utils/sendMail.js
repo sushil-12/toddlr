@@ -1,87 +1,44 @@
-const express = require('express');
-const { google } = require('googleapis');
 const nodemailer = require('nodemailer');
-const MailComposer = require('nodemailer/lib/mail-composer');
 
 // Constants
-const ADMIN_EMAIL = 'uno@hegroup.com';
-const APP_NAME = 'Hegroup';
+const ADMIN_EMAIL = 'sushil124maurya@gmail.com'; // Replace with your Gmail address
+const APP_NAME = 'toddlr';
 const FROM_NAME = `"${APP_NAME}" <${ADMIN_EMAIL}>`;
 
-// Configure nodemailer transport
+// Configure nodemailer transport using Gmail's SMTP
 const mailTransport = nodemailer.createTransport({
-  streamTransport: true,
-  newline: 'unix',
-  buffer: true
+  service: 'gmail', // Specify Gmail service
+  auth: {
+    user: ADMIN_EMAIL, // Gmail account email
+    pass: process.env.APP_PASSWORD // Gmail account password or app password (if 2FA is enabled)
+  }
 });
 
-// Function to send the MIME message using Gmail API
-async function sendMimeMessage(mimeMessage) {
-  const jwtClient = new google.auth.JWT({
-    email: process.env.CLIENT_EMAIL,
-    key: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'), // Replace escaped newlines
-    scopes: ['https://www.googleapis.com/auth/gmail.send'],
-    subject: ADMIN_EMAIL
-  });
-
-  try {
-    // Authorize the JWT client and get a token to make API calls
-    await jwtClient.authorize();
-
-    const gmail = google.gmail({ version: 'v1', auth: jwtClient });
-
-    // Send the email using the Gmail API
-    const response = await gmail.users.messages.send({
-      userId: 'me',
-      requestBody: { raw: mimeMessage }
-    });
-
-    console.log('Email sent:', response.data);
-  } catch (error) {
-    if (error.response && error.response.data) {
-      console.error('Error details:', error.response.data);
-    }
-    throw error;
-  }
-}
-
-// Function to create a MIME message using Nodemailer's MailComposer
+// Function to create an email
 const createMail = async (options) => {
   return new Promise((resolve, reject) => {
-    const mailComposer = new MailComposer(options);
+    const mailOptions = {
+      from: FROM_NAME, // Sender's email and name
+      to: options.to,  // Recipient's email
+      subject: options.subject, // Email subject
+      text: options.text, // Plain text body
+      html: options.html // HTML body (optional)
+    };
     
-    // Generate the email message
-    mailComposer.compile().build(async (err, message) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      try {
-        // Convert the message to a string
-        const messageString = message.toString();
-
-        // Encode the message string in Base64
-        const rawMessage = Buffer.from(messageString).toString('base64');
-
-        resolve(rawMessage);
-      } catch (error) {
-        reject(error);
-      }
-    });
+    resolve(mailOptions);
   });
 };
 
-// Function to send an email
+// Function to send an email via SMTP
 const sendMail = async (options) => {
   try {
-    // Create the MIME message using Nodemailer's MailComposer
-    const rawMessage = await createMail(options);
+    // Create the email message
+    const mailOptions = await createMail(options);
 
-    // Send the MIME message via Gmail API
-    await sendMimeMessage(rawMessage);
+    // Send the email using Gmail SMTP transport
+    const info = await mailTransport.sendMail(mailOptions);
 
-    console.log('Email sent successfully.');
+    console.log('Email sent successfully:', info.response);
     return 'Email sent successfully.';
   } catch (error) {
     console.error('Error sending email:', error);
