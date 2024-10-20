@@ -35,14 +35,14 @@ class AuthValidator {
     }    
 
     static validateLogin(body) {
-        const { username, password, email } = body;
+        const { username, password, phoneNumber } = body;
 
-        if (!((username && password) || (email && password))) {
+        if (!((username && password) || (phoneNumber && password))) {
             throw new CustomError(400, 'Username or email and password are required');
         }
 
-        if (email && !validator.isEmail(email)) {
-            throw new CustomError(400, 'Invalid email format');
+        if (phoneNumber && !validator.isMobilePhone(phoneNumber)) {
+            throw new CustomError(400, 'Invalid phoneNumber format');
         }
     }
 }

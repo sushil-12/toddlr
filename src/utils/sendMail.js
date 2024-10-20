@@ -10,7 +10,7 @@ const mailTransport = nodemailer.createTransport({
   service: 'gmail', // Specify Gmail service
   auth: {
     user: ADMIN_EMAIL, // Gmail account email
-    pass: process.env.APP_PASSWORD // Gmail account password or app password (if 2FA is enabled)
+    pass: 'fddhdktfhfvbhppe' // Gmail account password or app password (if 2FA is enabled)
   }
 });
 
@@ -34,7 +34,6 @@ const sendMail = async (options) => {
   try {
     // Create the email message
     const mailOptions = await createMail(options);
-
     // Send the email using Gmail SMTP transport
     const info = await mailTransport.sendMail(mailOptions);
 

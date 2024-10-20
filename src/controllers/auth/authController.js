@@ -103,16 +103,61 @@ const sendVerificationEmail = async (email, username, verificationLink) => {
   await sendMail(mailOptions);
 };
 
+const resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+    if (!user || user.isEmailVerified) {
+      return ResponseHandler.error(res, 'User not found or already verified.', HTTP_STATUS_CODES.BAD_REQUEST);
+    }
+
+    // Generate a new verification token
+    const verificationToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Detect platform from request
+    const isAndroid = req.body.platform === 'android';
+    const isIOS = req.body.platform === 'ios';
+
+    // Construct verification link for each platform
+    let verificationLink;
+    if (isAndroid) {
+      verificationLink = `toddlr://verify-email?token=${verificationToken}`;
+    } else if (isIOS) {
+      verificationLink = `https://yourdomain.com/verify-email?token=${verificationToken}`;
+    } else {
+      verificationLink = `${process.env.WEB_APP_URL}/verify-email?token=${verificationToken}`;
+    }
+
+    // Send the verification email
+    await sendVerificationEmail(user.email, user.username, verificationLink);
+
+    // Respond with success message
+    ResponseHandler.success(
+      res,
+      { message: 'Verification email resent successfully. Please check your inbox.' },
+      HTTP_STATUS_CODES.OK
+    );
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 
 const login = async (req, res) => {
   try {
     let otp;
     AuthValidator.validateLogin(req.body);
-    const { username, password, email, staySignedIn, form_type, verification_code, recaptcha_key } = req.body;
+    const { username, password, phoneNumber, staySignedIn, form_type, verification_code } = req.body;
 
     const user = username
       ? await User.findOne({ username, deleted_at: null })
-      : await User.findOne({ email, deleted_at: null });
+      : await User.findOne({ phoneNumber, deleted_at: null });
     let sign_in_stamp = new Date();
     if (!user) {
       ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'email', message: "Wrong Credentials" }, HTTP_STATUS_CODES.UNAUTHORIZED);
@@ -139,7 +184,7 @@ const login = async (req, res) => {
         const app_name = process.env.APP_NAME;
         const mailOptions = {
           from: `"${app_name}" <${process.env.EMAIL_FROM}>`,
-          to: email,
+          to: user.email,
           subject: 'Password Reset',
           html: template({ name: user.username, resetLink, app_logo, app_name })
         };
@@ -218,26 +263,26 @@ const login = async (req, res) => {
         const app_logo = `${process.env.APP_LOGO_PATH}`;
         const app_name = process.env.APP_NAME;
 
-        const mailOptions = {
-          from: `"${app_name}" <${process.env.EMAIL_FROM}>`,
-          to: email,
-          subject: 'Account Verification Email',
-          html: template({ otp, app_logo, app_name })
-        };
-        console.log("MAIL OPTIONS", mailOptions)
+        // const mailOptions = {
+        //   from: `"${app_name}" <${process.env.EMAIL_FROM}>`,
+        //   to: user?.email,
+        //   subject: 'Account Verification Email',
+        //   html: template({ otp, app_logo, app_name })
+        // };
+        // console.log("MAIL OPTIONS", mailOptions)
         // Send email
-        sendMail(mailOptions)
-          .then(() => {
-            ResponseHandler.success(res, { email_sent: true, otp, message: "Verification code sent successfully" }, HTTP_STATUS_CODES.OK);
-          })
-          .catch((error) => {
-            console.log(error, "EROR")
-            ResponseHandler.error(res, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, { field_error: 'password', email_sent: false, message: "Failed to send verification code" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR); return;
-          });
+        // sendMail(mailOptions)
+        //   .then(() => {
+        //     ResponseHandler.success(res, { email_sent: true, otp, message: "Verification code sent successfully" }, HTTP_STATUS_CODES.OK);
+        //   })
+        //   .catch((error) => {
+        //     console.log(error, "EROR")
+        //     ResponseHandler.error(res, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, { field_error: 'password', email_sent: false, message: "Failed to send verification code" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR); return;
+        //   });
       } catch (error) {
         ErrorHandler.handleError(error, res);
       }
-      return;
+      // return;
     }
 
     const token_expiry = staySignedIn == 'yes' ? process.env.STAY_SIGNEDIN_TOKEN_DURATION : process.env.NORMAL_TOKEN_DURATION;
@@ -399,6 +444,7 @@ module.exports = {
   editProfile,
   verifyEmail,
   resetPassword,
+  resendVerificationEmail,
   checkUsernameExists,
   checkEmailExists,
   generateRandomString
