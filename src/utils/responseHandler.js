@@ -1,4 +1,4 @@
-const { logger } = require("../logger");
+// const { logger } = require("../logger");
 const { formatString } = require("./helper");
 
 class CustomError extends Error {
@@ -60,14 +60,14 @@ class ResponseHandler {
 class ErrorHandler {
   static handleError(err, res) {
     const { statusCode = 500, message } = err;
-    logger.error(`${statusCode} - ${message}`); // Log error message
+    // logger.error(`${statusCode} - ${message}`); // Log error message
     let errorMessage = message;
     if (err.code === 11000) {
       const duplicateKeyErrorMatch = err.message.match(/dup key: \{ (.*?): "(.*?)" \}/);
       if (duplicateKeyErrorMatch) {
         const duplicateField = duplicateKeyErrorMatch[1];
         const duplicateValue = duplicateKeyErrorMatch[2];
-        logger.error(`Duplicate key error: Field "${duplicateField}" with value "${duplicateValue}" already exists. Details: ${err.message}`);
+        // logger.error(`Duplicate key error: Field "${duplicateField}" with value "${duplicateValue}" already exists. Details: ${err.message}`);
         errorMessage = `Duplicate entry found for ${formatString(duplicateField)}`;
       }
     }
@@ -85,11 +85,11 @@ class ErrorHandler {
       const value = err.keyValue[field];
       const errorMessage = `${field} "${value}" already exists`;
 
-      logger.error(`409 - ${errorMessage}`); // Log error message
+      // logger.error(`409 - ${errorMessage}`); // Log error message
       ResponseHandler.error(res, 409, 'Record exists with this value', [errorMessage]);
     } else {
       // Other database-related errors
-      logger.error(`500 - Database error: ${err.message}`); // Log error message
+      // logger.error(`500 - Database error: ${err.message}`); // Log error message
       ResponseHandler.error(res, 500, 'Database error');
     }
   }

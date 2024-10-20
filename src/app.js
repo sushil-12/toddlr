@@ -9,10 +9,8 @@ const useragent = require('express-useragent');
 const cors = require('cors');
 const corsOptions = require("./constants/cors");
 const { HTTP_STATUS_CODES } = require('./constants/error_message_codes');
-const basicAuth = require('express-basic-auth');
 const path = require('path');
 const fs = require('fs');
-const serveIndex = require('serve-index');
 const sanitizeInput = require('./middleware/sanitizeRequest');
 const rateLimit = require('express-rate-limit');
 
@@ -50,7 +48,7 @@ app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
 app.use('/auth', authRoutes);
 
 // Common routes
-app.use('/api/common', commonRoutes);
+// app.use('/api/common', commonRoutes);
 
 // Protected routes
 app.use('/api', protectedRoutes);

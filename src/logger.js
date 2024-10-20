@@ -19,7 +19,7 @@ const logFilePath = path.join(logDir, 'tofflr-cms-%DATE%.log');
 
 // Ensure the directories exist
 try {
-    fs.mkdirSync(logDir, { recursive: true });
+    // fs.mkdirSync(logDir, { recursive: true });
 } catch (err) {
     console.error('Error creating log directories:', err);
 }
@@ -56,7 +56,7 @@ const contactLogFilePath = path.join(contactLogDir, 'contact-api-%DATE%.log');
 console.log("contactLogFilePath", contactLogFilePath,   process.env.APP_ENV )
 // Ensure the contact log directory exists
 try {
-    fs.mkdirSync(contactLogDir, { recursive: true });
+    // fs.mkdirSync(contactLogDir, { recursive: true });
 } catch (err) {
     console.error('Error creating contact log directory:', err);
 }

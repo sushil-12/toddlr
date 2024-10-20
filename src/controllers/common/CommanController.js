@@ -1,4 +1,3 @@
-const { contactLogger } = require("../../logger");
 const { CustomError, ErrorHandler, ResponseHandler } = require("../../utils/responseHandler");
 const sendMail = require("../../utils/sendMail");
 const validator = require('validator');
@@ -52,17 +51,17 @@ const submitContactDetails = async (req, res) => {
 
         // Send email
         await sendMail(mailOptions);
-        contactLogger.info(`Message sent successfully from ${fname} <${email}> with subject "${subject}"`);
+        // contactLogger.info(`Message sent successfully from ${fname} <${email}> with subject "${subject}"`);
         ResponseHandler.success(res, { email_sent: true, message: "Message sent successfully" }, 200);
 
     } catch (error) {
         if (error instanceof CustomError) {
-            contactLogger.error(`Validation error: ${error.message}`);
-            contactLogger.error(`Failed payload: ${JSON.stringify(payload)}`);
+            // contactLogger.error(`Validation error: ${error.message}`);
+            // contactLogger.error(`Failed payload: ${JSON.stringify(payload)}`);
             ErrorHandler.handleError(error, res);
         } else {
-            contactLogger.error(`Unexpected error: ${error.message}`);
-            contactLogger.error(`Failed payload: ${JSON.stringify(payload)}`);
+            // contactLogger.error(`Unexpected error: ${error.message}`);
+            // contactLogger.error(`Failed payload: ${JSON.stringify(payload)}`);
             ErrorHandler.handleError(error, res);
         }
     }
