@@ -55,7 +55,7 @@ app.use('/api', protectedRoutes);
 
 // Root route
 app.get('/', (req, res) => {
-    res.send('Hey this is my API running 🥳');
+    res.send('Hey this is my toddlr API running 🥳');
 });
 
 // SVG upload route
