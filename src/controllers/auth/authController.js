@@ -30,48 +30,77 @@ const generateRandomString = (length) => {
 };
 
 const register = async (req, res) => {
-  // const resettemplateFilePath = path.join(__dirname, '..', '..', 'email-templates', 'reset-password.hbs');
-  // const templateFile = fs.readFileSync(resettemplateFilePath, 'utf8');
-  // const template = handlebars.compile(templateFile);
-  // const mailOptions = {
-  //   from: `"${'app_name'}" <${process.env.EMAIL_FROM}>`,
-  //   to: 'sushil124maurya@gmail.com',
-  //   subject: 'Password Reset',
-  //   html: template({ name: "sdsd", resetLink: "resetLink", app_logo: "app_logo", app_name: "app_name" })
-  // };
- 
-  // // Send email
-  // sendMail(mailOptions)
-  //   .then(() => {
-  //     ResponseHandler.success(res, { reset_link_sent: true, message: "Reset link sent successfully" }, HTTP_STATUS_CODES.OK);
-  //   })
-  //   .catch((error) => {
-  //     console.log(error)
-  //     ResponseHandler.error(res, { reset_link_sent: false, message: "Failed to send Reset link" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
-  //   });
-
   try {
+    // Validate the registration details
     AuthValidator.validateRegistration(req.body);
     const { username, password, email, phoneNumber } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user instance
+    // Create a new user instance with `isEmailVerified` initially set to `false`
     const newUser = new User({
       username,
       password: hashedPassword,
       email,
-      phoneNumber, // Include the mobile number in the user creation
+      phoneNumber,
+      isEmailVerified: false, // Email not verified yet
     });
 
     // Save the new user in the database
     await newUser.save();
 
+    // Generate a verification token that expires in 1 hour
+    const verificationToken = jwt.sign(
+      { userId: newUser._id },
+      process.env.JWT_SECRET, // Ensure you have this in your environment
+      { expiresIn: '1h' }
+    );
+    // Detect platform from request
+    const isAndroid = req.body.platform === 'android';
+    const isIOS = req.body.platform === 'ios';
+
+    // Construct verification link for each platform
+    let verificationLink;
+    if (isAndroid) {
+      verificationLink = `toddlr://verify-email?token=${verificationToken}`; // Custom scheme for Android
+    } else if (isIOS) {
+      verificationLink = `https://yourdomain.com/verify-email?token=${verificationToken}`; // Universal link for iOS
+    } else {
+      verificationLink = `${process.env.WEB_APP_URL}/verify-email?token=${verificationToken}`; // Fallback for web
+    }
+
+    // Send the verification email
+    await sendVerificationEmail(newUser.email, newUser.username, verificationLink);
+
     // Respond with success message
-    ResponseHandler.success(res, { message: 'User registered successfully' }, HTTP_STATUS_CODES.OK);
+    ResponseHandler.success(
+      res,
+      { message: 'User registered successfully. Please check your email to verify your account.' },
+      HTTP_STATUS_CODES.OK
+    );
   } catch (error) {
-    // Handle any errors
     ErrorHandler.handleError(error, res);
   }
+};
+
+const sendVerificationEmail = async (email, username, verificationLink) => {
+  const templateFilePath = path.join(__dirname, '..', '..', 'email-templates', 'verify-email.hbs');
+
+  const templateFile = fs.readFileSync(templateFilePath, 'utf8');
+  const template = handlebars.compile(templateFile);
+
+  const mailOptions = {
+    from: `"${process.env.APP_NAME}" <${process.env.EMAIL_FROM}>`,
+    to: email,
+    subject: `Let's Get Started – Verify Your ${process.env.APP_NAME} Email and Dive In!`,
+    html: template({
+      username,
+      verificationLink,
+      app_name: process.env.APP_NAME,
+      app_logo: process.env.APP_LOGO, // Optionally include a logo if needed
+    }),
+  };
+
+  await sendMail(mailOptions);
 };
 
 
@@ -335,46 +364,32 @@ const checkEmailExists = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
   try {
-    const { token, uniqueId, email } = req.body;
-    const decodedToken = decodeURIComponent(token);
-    const decodedUniqueId = decodeURIComponent(uniqueId);
-    const decodedEmail = atob(email);
-    if (!mongoose.Types.ObjectId.isValid(uniqueId)) {
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'verification_code', message: 'This link has been expired or not exists Please generate a new one.' });
+    const { token } = req.query;
+
+    if (!token) {
+      return ResponseHandler.error(res, 'Invalid or missing token', HTTP_STATUS_CODES.BAD_REQUEST);
     }
 
-    const user = await User.findById(decodedUniqueId);
-    // Check if the user exists
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (new Date() > user.verificationLinkExpiryTime) {
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.NOT_FOUND, { message: 'This link has been expired! Please generate a new one.' });
-    }
-    
+    // Find the user based on the token's userId
+    const user = await User.findById(decoded.userId);
+
     if (!user) {
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.NOT_FOUND, { message: 'This link has been expired please generate a new one.' });
-    }
-    // Check if the verification token matches
-    if (decodedToken !== user.otp) {
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'verification_code', message: 'This link has been expired please generate a new one.' });
+      return ResponseHandler.error(res, 'User not found', HTTP_STATUS_CODES.NOT_FOUND);
     }
 
-    // Check if the OTP has expired
-    if (new Date() > user.otpExpiry) {
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'verification_code', message: 'This link has been expired please generate a new one.' });
-    }
-    user.isEmailVerified = true;
-    user.temp_email = '';
-    user.email = decodedEmail;
-    try {
+    // Mark the user as verified
+    if (!user.isEmailVerified) {
+      user.isEmailVerified = true;
       await user.save();
-    } catch (error) {
-      console.log(error);
     }
-    ResponseHandler.success(res, { verified: true, message: "Email verified successfully" }, HTTP_STATUS_CODES.OK);
-    return;
+
+    // Respond with success message
+    ResponseHandler.success(res, { message: 'Email verified successfully' }, HTTP_STATUS_CODES.OK);
   } catch (error) {
-    console.log(error)
-    return ErrorHandler.handleError(error, res);
+    ErrorHandler.handleError(error, res);
   }
 };
 
