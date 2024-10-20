@@ -38,7 +38,7 @@ class AuthValidator {
         const { username, password, phoneNumber } = body;
 
         if (!((username && password) || (phoneNumber && password))) {
-            throw new CustomError(400, 'Username or email and password are required');
+            throw new CustomError(400, 'Username or phoneNumber and password are required');
         }
 
         if (phoneNumber && !validator.isMobilePhone(phoneNumber)) {
