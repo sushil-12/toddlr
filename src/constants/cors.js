@@ -8,7 +8,7 @@ var originsWhitelist = [
 
 const corsOptions = {
     origin: function (origin, callback) {
-        if (!origin || originsWhitelist.includes(origin)) {
+        if (!origin || originsWhitelist.includes(-origin)) {
             callback(null, true);
         } else {
             console.log('origin:', origin, 'not allowed');
