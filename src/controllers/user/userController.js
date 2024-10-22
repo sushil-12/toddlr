@@ -5,8 +5,7 @@ const { HTTP_STATUS_CODES } = require('../../constants/error_message_codes');
 const User = require('../../models/User');
 
 
-const getUserDetails = async(req,res)=>{
-
+const getUserDetails = async(req,res)=>{``
     try{
         var  token = req.headers['access_token']
         if (!token) {
