@@ -18,6 +18,7 @@ class ResponseHandler {
       code: code,
       status: 'success',
       data,
+      message: data?.message || data?.message !== undefined ? data.message : 'Response fetched sucessfuly!'
     });
   }
 
