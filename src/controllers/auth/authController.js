@@ -52,7 +52,7 @@ const register = async (req, res) => {
     const verificationToken = jwt.sign(
       { userId: newUser._id },
       process.env.JWT_SECRET, // Ensure you have this in your environment
-      { expiresIn: '1h' }
+      { expiresIn: process.env.TOKEN_DURATION }
     );
     // Detect platform from request
     const isAndroid = req.body.platform === 'android';
@@ -117,7 +117,7 @@ const resendVerificationEmail = async (req, res) => {
     const verificationToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: process.env.TOKEN_DURATION }
     );
 
     // Detect platform from request
@@ -143,6 +143,80 @@ const resendVerificationEmail = async (req, res) => {
       { message: 'Verification email resent successfully. Please check your inbox.' },
       HTTP_STATUS_CODES.OK
     );
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+const socialLogin = async (req, res) => {
+  try {
+    const { googleLoginId, facebookLoginId, appleLoginId, email, username, profilePic } = req.body;
+
+    // Validate that we have at least one social login ID and other necessary fields
+    if (!googleLoginId && !facebookLoginId && !appleLoginId) {
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
+        field_error: 'loginId',
+        message: "Missing social login ID",
+      });
+    }
+
+    if (!email || !username) {
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
+        message: "Email and username are required for new users",
+      });
+    }
+
+    // Build query for finding an existing user based on social login ID
+    const query = {
+      deleted_at: null,
+      $or: []
+    };
+
+    if (googleLoginId) query.$or.push({ googleLoginId: googleLoginId });
+    if (facebookLoginId) query.$or.push({ facebookLoginId: facebookLoginId });
+    if (appleLoginId) query.$or.push({ appleLoginId: appleLoginId });
+
+    // Check if at least one social login ID is provided
+    if (query.$or.length === 0) {
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
+        field_error: 'loginId',
+        message: "Missing social login ID",
+      });
+    }
+
+    // Attempt to find an existing user with the provided social login ID
+    let user = await User.findOne(query);
+
+    if (user) {
+      // If user exists, issue JWT token
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.TOKEN_DURATION,
+      });
+
+      ResponseHandler.success(res, { token, message: "Login successfull" }, HTTP_STATUS_CODES.OK);
+    } else {
+      // If user does not exist, create a new one
+      user = new User({
+        email,
+        username,
+        isEmailVerified: true,
+        profile_pic: profilePic,
+        googleLoginId: googleLoginId || null,
+        facebookLoginId: facebookLoginId || null,
+        appleLoginId: appleLoginId || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await user.save();
+
+      // Generate token for the new user
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.TOKEN_DURATION,
+      });
+
+      ResponseHandler.success(res, { token, message: "Registration and login successfull" }, HTTP_STATUS_CODES.CREATED);
+    }
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
@@ -439,7 +513,7 @@ const verifyEmail = async (req, res) => {
 };
 
 module.exports = {
-  register,
+  register, socialLogin,
   login,
   editProfile,
   verifyEmail,
