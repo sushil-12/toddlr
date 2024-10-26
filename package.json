@@ -14,12 +14,14 @@
     "bcrypt": "^5.1.1",
     "brfs": "^2.0.2",
     "cloudinary": "^1.41.1",
+    "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-basic-auth": "^1.2.1",
     "express-list-endpoints": "^6.0.0",
     "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.1",
     "express-useragent": "^1.0.15",
     "googleapis": "^133.0.0",
     "handlebars": "^4.7.8",
@@ -28,11 +30,18 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.9",
     "nodemon": "^3.0.2",
+    "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth2": "^0.2.0",
+    "passport-google-oauth20": "^2.0.0",
     "serve-index": "^1.9.1",
     "uuid": "^9.0.1",
     "validator": "^13.11.0",
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^5.0.0",
     "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "@types/passport-google-oauth20": "^2.0.16"
   }
 }

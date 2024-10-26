@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+  googleId: String,
+  facebookId: String,
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String, required: false },
   email: { type: String, required: true, unique: true },
   temp_email: { type: String },
   isEmailVerified: { type: Boolean, default: false },
@@ -28,7 +30,7 @@ const userSchema = new mongoose.Schema({
   permissions: { type: Object, nullable: true },
   created_by: { type: String },
   deleted_at: { type: Date, default: null, nullable: true },
-  phoneNumber: { type: String, required: true, unique: true } // Mobile number field
+  phoneNumber: { type: String, required: false, unique: true } // Mobile number field
 });
 
 const User = mongoose.model('User', userSchema);

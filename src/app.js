@@ -13,6 +13,8 @@ const path = require('path');
 const fs = require('fs');
 const sanitizeInput = require('./middleware/sanitizeRequest');
 const rateLimit = require('express-rate-limit');
+const passport = require('passport');
+const session = require('express-session')
 
 const app = express();
 
@@ -30,6 +32,12 @@ const limiter = rateLimit({
     headers: true, // Send rate limit header info
 });
 
+app.use(session({
+    secret: process.env.JWT_SECRET || 'your_secret_key', // Replace with a strong secret
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }, // Set to true if using HTTPS
+}));
 // Middleware
 app.use(express.json({ limit: '250kb' }));  // Set payload size to 150kb
 app.use(express.urlencoded({ limit: '250kb', extended: true }));
@@ -37,6 +45,9 @@ app.use(bodyParser.json());
 app.use(cors(corsOptions));
 app.use(sanitizeInput);
 app.use(useragent.express());
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Applying the rate limiter to all requests
 // app.use(limiter);
@@ -57,6 +68,7 @@ app.use('/api', protectedRoutes);
 app.get('/', (req, res) => {
     res.send('Hey this is my toddlr API running 🥳');
 });
+
 
 // SVG upload route
 app.post('/upload/svg', (req, res) => {
