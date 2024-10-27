@@ -23,11 +23,24 @@ class ResponseHandler {
   }
 
   static error(res, code, message, errors = []) {
-   code === 11000 ? code = 500: code;
+    // Handle MongoDB duplicate key error
+    if (code === 11000) {
+      code = 500; // Change the status code for duplicate key errors
+    }
+
+    // If message is an object, extract the `message` property
+    const responseMessage = typeof message === 'object' && message !== null
+      ? message.message
+      : message;
+
+    // Send the error response
     res.status(code).json({
       status: 'error',
       code,
-      message,
+      message: responseMessage,
+      data: {
+        message: responseMessage,
+      },
       errors,
     });
   }
