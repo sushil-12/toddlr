@@ -35,17 +35,17 @@ const register = async (req, res) => {
     AuthValidator.validateRegistration(req.body);
     const { username, password, email, phoneNumber, privacyPolicyAccepted, termsAndConditionAccepted } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // Check if a user with the same email exists
     const existingEmailUser = await User.findOne({ email });
     if (existingEmailUser) {
-      return ResponseHandler.error(res,HTTP_STATUS_CODES.CONFLICT ,'User with this email exists!' ); // Use CONFLICT (409)
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.CONFLICT, 'User with this email exists!'); // Use CONFLICT (409)
     }
 
     // Check if a user with the same phone number exists
     const existingPhoneUser = await User.findOne({ phoneNumber });
     if (existingPhoneUser) {
-      return ResponseHandler.error(res,HTTP_STATUS_CODES.CONFLICT ,'User with this phone number exists!'); // Use CONFLICT (409)
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.CONFLICT, 'User with this phone number exists!'); // Use CONFLICT (409)
     }
 
     // Create a new user instance with `isEmailVerified` initially set to `false`
@@ -266,7 +266,7 @@ const login = async (req, res) => {
     });
     let sign_in_stamp = new Date();
     if (!user) {
-      ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'email', message: "Wrong Credentials" }, HTTP_STATUS_CODES.UNAUTHORIZED);
+      ResponseHandler.success(res, { message: 'No user found!' }, HTTP_STATUS_CODES.UNAUTHORIZED);
       return;
     }
     if (user.login_expired_till != null && user.login_expired_till > new Date()) {
@@ -339,13 +339,14 @@ const login = async (req, res) => {
         //   user.incorrectAttempts = 0;
         //   user.save();
         // }
-        ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, "Wrong Credentials", HTTP_STATUS_CODES.UNAUTHORIZED);
+        ResponseHandler.success(res, { message: 'Wrong credentials' }, HTTP_STATUS_CODES.UNAUTHORIZED);
+
         return;
       } else {
         user.incorrectAttempts = incorrectAttempts;
         user.save();
       }
-      ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED,  "Wrong Credentials" , HTTP_STATUS_CODES.UNAUTHORIZED);
+      ResponseHandler.success(res, { message: 'Wrong credentials' }, HTTP_STATUS_CODES.UNAUTHORIZED);
       return;
       // throw new CustomError(HTTP_STATUS_CODES.UNAUTHORIZED, HTTP_STATUS_MESSAGES.UNAUTHORIZED);
     }
