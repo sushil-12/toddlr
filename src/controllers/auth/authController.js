@@ -323,29 +323,29 @@ const login = async (req, res) => {
       rem_attempts = parseInt(process.env.WRONG_ATTEMPT_COUNT - incorrectAttempts);
       if (incorrectAttempts > process.env.WRONG_ATTEMPT_COUNT || incorrectAttempts == process.env.WRONG_ATTEMPT_COUNT) {
         let toast_messaage = '';
-        if (user.lastIncorrectNotificationAttempt == 0) {
-          toast_messaage = 'Restricted for 30 minutes';
-          restricted_till = parseInt(process.env.FIRST_TIME_BLOCK_DURATION);
-          user.login_expired_till = new Date(Date.now() + parseInt(process.env.FIRST_TIME_BLOCK_DURATION));
-          user.lastIncorrectNotificationAttempt = 1;
-          user.incorrectAttempts = 0;
-          user.save();
-        }
-        else {
-          toast_messaage = 'Restricted for 24 hours';
-          restricted_till = parseInt(process.env.SECOND_TIME_BLOCK_DURATION);
-          user.login_expired_till = new Date(Date.now() + parseInt(process.env.SECOND_TIME_BLOCK_DURATION));
-          user.lastIncorrectNotificationAttempt = 1;
-          user.incorrectAttempts = 0;
-          user.save();
-        }
-        ResponseHandler.restrict(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'password', toast_error: true, toast_message: toast_messaage, message: "Wrong Credentials", attempts_remaining: rem_attempts, restricted_till }, HTTP_STATUS_CODES.UNAUTHORIZED);
+        // if (user.lastIncorrectNotificationAttempt == 0) {
+        //   toast_messaage = 'Restricted for 30 minutes';
+        //   restricted_till = parseInt(process.env.FIRST_TIME_BLOCK_DURATION);
+        //   user.login_expired_till = new Date(Date.now() + parseInt(process.env.FIRST_TIME_BLOCK_DURATION));
+        //   user.lastIncorrectNotificationAttempt = 1;
+        //   user.incorrectAttempts = 0;
+        //   user.save();
+        // }
+        // else {
+        //   toast_messaage = 'Restricted for 24 hours';
+        //   restricted_till = parseInt(process.env.SECOND_TIME_BLOCK_DURATION);
+        //   user.login_expired_till = new Date(Date.now() + parseInt(process.env.SECOND_TIME_BLOCK_DURATION));
+        //   user.lastIncorrectNotificationAttempt = 1;
+        //   user.incorrectAttempts = 0;
+        //   user.save();
+        // }
+        ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, "Wrong Credentials", HTTP_STATUS_CODES.UNAUTHORIZED);
         return;
       } else {
         user.incorrectAttempts = incorrectAttempts;
         user.save();
       }
-      ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'password', message: "Wrong Credentials", attempts_remaining: rem_attempts }, HTTP_STATUS_CODES.UNAUTHORIZED);
+      ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED,  "Wrong Credentials" , HTTP_STATUS_CODES.UNAUTHORIZED);
       return;
       // throw new CustomError(HTTP_STATUS_CODES.UNAUTHORIZED, HTTP_STATUS_MESSAGES.UNAUTHORIZED);
     }
