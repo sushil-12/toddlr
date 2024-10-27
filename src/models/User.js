@@ -26,6 +26,8 @@ const userSchema = new mongoose.Schema({
   resetTokenExpiry: { type: Date },
   verificationLinkExpiryTime: { type: Date },
   staySignedIn: { type: Boolean, default: false },
+  privacyPolicyAccepted: { type: Boolean, default: false },
+  termsAndConditionAccepted: { type: Boolean, default: false },
   signInTimestamp: { type: Date },
   incorrectAttempts: { type: Number, default: 0 },
   lastIncorrectNotificationAttempt: { type: Number, default: 0 },

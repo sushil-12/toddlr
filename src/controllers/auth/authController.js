@@ -33,7 +33,7 @@ const register = async (req, res) => {
   try {
     // Validate the registration details
     AuthValidator.validateRegistration(req.body);
-    const { username, password, email, phoneNumber } = req.body;
+    const { username, password, email, phoneNumber, privacyPolicyAccepted, termsAndConditionAccepted } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user instance with `isEmailVerified` initially set to `false`
@@ -42,6 +42,8 @@ const register = async (req, res) => {
       password: hashedPassword,
       email,
       phoneNumber,
+      privacyPolicyAccepted,
+      termsAndConditionAccepted,
       isEmailVerified: false, // Email not verified yet
     });
 

@@ -2,9 +2,9 @@
 const { formatString } = require("./helper");
 
 class CustomError extends Error {
-  constructor(statusCode, message, errors = null) {
+  constructor(code, message, errors = null) {
     super(message);
-    this.statusCode = statusCode;
+    this.code = code;
     this.name = this.constructor.name;
     this.errors = errors; // Optional property for detailed field errors
   }
@@ -22,28 +22,28 @@ class ResponseHandler {
     });
   }
 
-  static error(res, statusCode, message, errors = []) {
-    res.status(statusCode).json({
+  static error(res, code, message, errors = []) {
+    res.status(code).json({
       status: 'error',
-      statusCode,
+      code,
       message,
       errors,
     });
   }
 
-  static restrict(res, statusCode, message, errors = []) {
-    res.status(statusCode).json({
+  static restrict(res, code, message, errors = []) {
+    res.status(code).json({
       status: 'restrict',
-      statusCode,
+      code,
       message,
       errors,
     });
   }
 
-  static validateRecaptcha(res, statusCode, message, errors = []) {
-    res.status(statusCode).json({
+  static validateRecaptcha(res, code, message, errors = []) {
+    res.status(code).json({
       status: 'recaptcha-validate',
-      statusCode,
+      code,
       message,
       errors,
     });
@@ -52,7 +52,7 @@ class ResponseHandler {
   static notFound(res) {
     res.status(404).json({
       status: 'error',
-      statusCode: 404,
+      code: 404,
       message: 'API Route not found!',
     });
   }
@@ -60,8 +60,8 @@ class ResponseHandler {
 
 class ErrorHandler {
   static handleError(err, res) {
-    const { statusCode = 500, message } = err;
-    // logger.error(`${statusCode} - ${message}`); // Log error message
+    const { code = 500, message } = err;
+    // logger.error(`${code} - ${message}`); // Log error message
     let errorMessage = message;
     if (err.code === 11000) {
       const duplicateKeyErrorMatch = err.message.match(/dup key: \{ (.*?): "(.*?)" \}/);
@@ -72,7 +72,7 @@ class ErrorHandler {
         errorMessage = `Duplicate entry found for ${formatString(duplicateField)}`;
       }
     }
-    ResponseHandler.error(res, statusCode, errorMessage);
+    ResponseHandler.error(res, code, errorMessage);
   }
 
   static handleNotFound(res) {

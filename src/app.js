@@ -26,7 +26,7 @@ const limiter = rateLimit({
     max: 100, // limit each IP to 100 requests per windowMs
     message: {
         status: 'error',
-        statusCode: 429,
+        code: 429,
         message: 'Too many requests, please try again later.'
     },
     headers: true, // Send rate limit header info
