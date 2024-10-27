@@ -54,7 +54,9 @@ app.use(passport.session());
 
 // Serve static assets
 app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
-
+// Set Handlebars as the view engine
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
 // Authentication routes
 app.use('/auth', authRoutes);
 
@@ -68,7 +70,13 @@ app.use('/api', protectedRoutes);
 app.get('/', (req, res) => {
     res.send('Hey this is my toddlr API running 🥳');
 });
+app.get('/privacy-policy', (req, res) => {
+    res.render('privacyPolicy');
+});
 
+app.get('/terms-and-conditions', (req, res) => {
+    res.render('termsAndConditions');
+});
 
 // SVG upload route
 app.post('/upload/svg', (req, res) => {
