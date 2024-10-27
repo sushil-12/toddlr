@@ -35,6 +35,18 @@ const register = async (req, res) => {
     AuthValidator.validateRegistration(req.body);
     const { username, password, email, phoneNumber, privacyPolicyAccepted, termsAndConditionAccepted } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Check if a user with the same email exists
+    const existingEmailUser = await User.findOne({ email });
+    if (existingEmailUser) {
+      return ResponseHandler.error(res,HTTP_STATUS_CODES.CONFLICT ,'User with this email exists!' ); // Use CONFLICT (409)
+    }
+
+    // Check if a user with the same phone number exists
+    const existingPhoneUser = await User.findOne({ phoneNumber });
+    if (existingPhoneUser) {
+      return ResponseHandler.error(res,HTTP_STATUS_CODES.CONFLICT ,'User with this phone number exists!'); // Use CONFLICT (409)
+    }
 
     // Create a new user instance with `isEmailVerified` initially set to `false`
     const newUser = new User({
@@ -56,6 +68,7 @@ const register = async (req, res) => {
       process.env.JWT_SECRET, // Ensure you have this in your environment
       { expiresIn: process.env.TOKEN_DURATION }
     );
+
     // Detect platform from request
     const isAndroid = req.body.platform === 'android';
     const isIOS = req.body.platform === 'ios';
@@ -74,13 +87,14 @@ const register = async (req, res) => {
     await sendVerificationEmail(newUser.email, newUser.username, verificationLink);
 
     // Respond with success message
-    ResponseHandler.success(
+    return ResponseHandler.success(
       res,
       { message: 'User registered successfully. Please check your email to verify your account.' },
       HTTP_STATUS_CODES.OK
     );
   } catch (error) {
-    ErrorHandler.handleError(error, res);
+    console.error('Registration error:', error); // Log error for debugging
+    return ErrorHandler.handleError(error, res);
   }
 };
 
@@ -237,18 +251,18 @@ const login = async (req, res) => {
     const conditions = [];
 
     if (username) {
-        conditions.push({ username });
+      conditions.push({ username });
     }
     if (phoneNumber) {
-        conditions.push({ phoneNumber });
+      conditions.push({ phoneNumber });
     }
     if (email) {
-        conditions.push({ email });
+      conditions.push({ email });
     }
 
     const user = await User.findOne({
-        $or: conditions,
-        deleted_at: null
+      $or: conditions,
+      deleted_at: null
     });
     let sign_in_stamp = new Date();
     if (!user) {
@@ -297,10 +311,10 @@ const login = async (req, res) => {
       return;
     }
 
-    if(password && password == "" || password == undefined){
+    if (password && password == "" || password == undefined) {
       throw new CustomError(400, 'Password is required!');
     }
-    console.log("PAS", user,password)
+    console.log("PAS", user, password)
     const passwordMatch = await bcrypt.compare(password, user.password);
     let incorrectAttempts = user.incorrectAttempts || 0;
     if (!passwordMatch) {

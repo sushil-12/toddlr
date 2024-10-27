@@ -23,6 +23,7 @@ class ResponseHandler {
   }
 
   static error(res, code, message, errors = []) {
+   code === 11000 ? code = 500: code;
     res.status(code).json({
       status: 'error',
       code,
@@ -60,6 +61,7 @@ class ResponseHandler {
 
 class ErrorHandler {
   static handleError(err, res) {
+    console.log(err.code)
     const { code = 500, message } = err;
     // logger.error(`${code} - ${message}`); // Log error message
     let errorMessage = message;
