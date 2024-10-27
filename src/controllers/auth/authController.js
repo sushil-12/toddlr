@@ -172,9 +172,9 @@ const socialLogin = async (req, res) => {
       $or: []
     };
 
-    if (googleLoginId) query.$or.push({ googleLoginId: googleLoginId });
-    if (facebookLoginId) query.$or.push({ facebookLoginId: facebookLoginId });
-    if (appleLoginId) query.$or.push({ appleLoginId: appleLoginId });
+    if (googleLoginId) query.$or.push({ googleLoginId });
+    if (facebookLoginId) query.$or.push({ facebookLoginId });
+    if (appleLoginId) query.$or.push({ appleLoginId });
 
     // Check if at least one social login ID is provided
     if (query.$or.length === 0) {
@@ -188,12 +188,16 @@ const socialLogin = async (req, res) => {
     let user = await User.findOne(query);
 
     if (user) {
-      // If user exists, issue JWT token
+      // If user exists, check if password is set to determine profile completion status
+      const isProfileCompleted = !!user.password;
+      const isUpdateRequired = !!user.phoneNumber;
+
+      // Issue JWT token
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.TOKEN_DURATION,
       });
 
-      ResponseHandler.success(res, { token, message: "Login successfull" }, HTTP_STATUS_CODES.OK);
+      ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
     } else {
       // If user does not exist, create a new one
       user = new User({
@@ -215,23 +219,35 @@ const socialLogin = async (req, res) => {
         expiresIn: process.env.TOKEN_DURATION,
       });
 
-      ResponseHandler.success(res, { token, message: "Registration and login successfull" }, HTTP_STATUS_CODES.CREATED);
+      ResponseHandler.success(res, { token, isProfileCompleted: false, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
     }
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
 };
 
-
 const login = async (req, res) => {
   try {
     let otp;
     AuthValidator.validateLogin(req.body);
-    const { username, password, phoneNumber, staySignedIn, form_type, verification_code } = req.body;
+    const { username, password, phoneNumber, email, staySignedIn, form_type, verification_code } = req.body;
 
-    const user = username
-      ? await User.findOne({ username, deleted_at: null })
-      : await User.findOne({ phoneNumber, deleted_at: null });
+    const conditions = [];
+
+    if (username) {
+        conditions.push({ username });
+    }
+    if (phoneNumber) {
+        conditions.push({ phoneNumber });
+    }
+    if (email) {
+        conditions.push({ email });
+    }
+
+    const user = await User.findOne({
+        $or: conditions,
+        deleted_at: null
+    });
     let sign_in_stamp = new Date();
     if (!user) {
       ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { field_error: 'email', message: "Wrong Credentials" }, HTTP_STATUS_CODES.UNAUTHORIZED);
@@ -279,6 +295,10 @@ const login = async (req, res) => {
       return;
     }
 
+    if(password && password == "" || password == undefined){
+      throw new CustomError(400, 'Password is required!');
+    }
+    console.log("PAS", user,password)
     const passwordMatch = await bcrypt.compare(password, user.password);
     let incorrectAttempts = user.incorrectAttempts || 0;
     if (!passwordMatch) {
