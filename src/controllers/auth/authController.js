@@ -117,14 +117,7 @@ const register = async (req, res) => {
     const isIOS = req.body.platform === 'ios';
 
     // Construct verification link for each platform
-    let verificationLink;
-    if (isAndroid) {
-      verificationLink = `toddlr://verify-email?token=${verificationToken}`; // Custom scheme for Android
-    } else if (isIOS) {
-      verificationLink = `https://yourdomain.com/verify-email?token=${verificationToken}`; // Universal link for iOS
-    } else {
-      verificationLink = `${process.env.WEB_APP_URL}/verify-email?token=${verificationToken}`; // Fallback for web
-    }
+    let verificationLink = await createDynamicLink(`https://toddlrapi.vercel.app/verify-email?token=${verificationToken}`);
 
     // Send the verification email
     await sendVerificationEmail(newUser.email, newUser.username, verificationLink);
@@ -345,8 +338,8 @@ const login = async (req, res) => {
         user.resetToken = resetToken;
         user.resetTokenExpiry = new Date(Date.now() + parseInt(process.env.RESET_TOKEN_EXPIRY));
         await user.save();
-        const resetLinkDomain = `https://toddlrapi.vercel.app/${process.env.RESET_PASSWORD_URL}/${resetToken}`;
-        const resetLink = createDynamicLink(resetLinkDomain);
+        const resetLinkDomain = `https://toddlrapi.vercel.app?screen=${process.env.RESET_PASSWORD_URL}&token=${resetToken}`;
+        const resetLink = await createDynamicLink(resetLinkDomain);
         console.log(resetLink, "RESET LINKS")
         const template = handlebars.compile(templateFile);
         const app_logo = `${process.env.APP_LOGO_PATH}`;
