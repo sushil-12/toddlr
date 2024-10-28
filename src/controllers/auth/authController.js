@@ -15,9 +15,52 @@ const path = require('path');
 const { Readable } = require('stream');
 const useragent = require('express-useragent'); // Import express-useragent
 const { default: mongoose } = require('mongoose');
+const admin = require('firebase-admin');
+const { initializeApp } = require('firebase-admin/app');
+const axios = require('axios');
 
 const app = express();
 app.use(useragent.express());
+
+
+// // Initialize Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(), // Or use your service account key
+  databaseURL: 'https://toddlr-baf62-default-rtdb.firebaseio.com',
+});
+
+const createDynamicLink = async (link) => {
+  const apiKey = process.env.FIREBASE_API_KEY; // Replace with your Firebase web API key
+  const dynamicLinkDomain = 'https://toddlr.page.link'; // Change this to your dynamic link domain
+    console.log("LINK", link)
+  const requestBody = {
+    dynamicLinkInfo: {
+      domainUriPrefix: dynamicLinkDomain,
+      link: link,
+      androidInfo: {
+        androidPackageName: 'com.toddlr.app',
+        androidFallbackLink: link, // Fallback link for users without the app
+      },
+      iosInfo: {
+        iosBundleId: 'com.toddlr.app',
+        iosFallbackLink: link, // Fallback link for users without the app
+      },
+    },
+    suffix: {
+      option: 'SHORT',
+    },
+  };
+
+  try {
+    const response = await axios.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${apiKey}`, requestBody);
+    console.log(response);
+    return response.data.shortLink; // Returns the short dynamic link
+  } catch (error) {
+    console.error('Error creating dynamic link:', error.response.data);
+    throw error;
+  }
+};
+
 
 const generateRandomString = (length) => {
   const charset = '0123456789'; // Only digits
@@ -269,6 +312,7 @@ const login = async (req, res) => {
       conditions.push({ email });
     }
 
+    let user;
     if(form_type == "forgot_password_form"){
       user = await User.findOne({
         email,
@@ -301,7 +345,9 @@ const login = async (req, res) => {
         user.resetToken = resetToken;
         user.resetTokenExpiry = new Date(Date.now() + parseInt(process.env.RESET_TOKEN_EXPIRY));
         await user.save();
-        const resetLink = `${process.env.FRONTEND_APP_URL}${process.env.RESET_PASSWORD_URL}/${resetToken}`;
+        const resetLinkDomain = `https://toddlrapi.vercel.app/${process.env.RESET_PASSWORD_URL}/${resetToken}`;
+        const resetLink = createDynamicLink(resetLinkDomain);
+        console.log(resetLink, "RESET LINKS")
         const template = handlebars.compile(templateFile);
         const app_logo = `${process.env.APP_LOGO_PATH}`;
         const app_name = process.env.APP_NAME;
