@@ -269,10 +269,18 @@ const login = async (req, res) => {
       conditions.push({ email });
     }
 
-    const user = await User.findOne({
-      $or: conditions,
-      deleted_at: null
-    });
+    if(form_type == "forgot_password_form"){
+      user = await User.findOne({
+        email,
+        deleted_at: null
+      });
+    }
+    else {
+      user = await User.findOne({
+        $or: conditions,
+        deleted_at: null
+      });
+    }
     let sign_in_stamp = new Date();
     if (!user) {
       ResponseHandler.success(res, { message: 'User not found. Check username or phone number!' }, HTTP_STATUS_CODES.UNAUTHORIZED);
