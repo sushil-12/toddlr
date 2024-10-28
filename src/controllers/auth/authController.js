@@ -266,7 +266,7 @@ const login = async (req, res) => {
     });
     let sign_in_stamp = new Date();
     if (!user) {
-      ResponseHandler.success(res, { message: 'No user found!' }, HTTP_STATUS_CODES.UNAUTHORIZED);
+      ResponseHandler.success(res, { message: 'User not found. Check username or phone number!' }, HTTP_STATUS_CODES.UNAUTHORIZED);
       return;
     }
     if (user.login_expired_till != null && user.login_expired_till > new Date()) {
