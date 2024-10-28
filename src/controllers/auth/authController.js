@@ -168,6 +168,15 @@ const socialLogin = async (req, res) => {
   try {
     const { googleLoginId, facebookLoginId, appleLoginId, email, username, profilePic } = req.body;
 
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
+        message: "Already registered. Use your password to log in!",
+      });
+    }
+
+
     // Validate that we have at least one social login ID and other necessary fields
     if (!googleLoginId && !facebookLoginId && !appleLoginId) {
       return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
