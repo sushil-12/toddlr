@@ -117,7 +117,7 @@ const register = async (req, res) => {
     const isIOS = req.body.platform === 'ios';
 
     // Construct verification link for each platform
-    let verificationLink = await createDynamicLink(`https://toddlrapi.vercel.app/verify-email?token=${verificationToken}`);
+    let verificationLink = await createDynamicLink(`https://toddlrapi.vercel.app/verify-email?screen=verify&token=${verificationToken}`);
 
     // Send the verification email
     await sendVerificationEmail(newUser.email, newUser.username, verificationLink);
