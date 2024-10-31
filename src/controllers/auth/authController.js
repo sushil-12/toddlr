@@ -204,14 +204,28 @@ const socialLogin = async (req, res) => {
   try {
     const { googleLoginId, facebookLoginId, appleLoginId, email, username, profilePic } = req.body;
 
-
+    // Check if a user with the given email already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
-        message: "Already registered. Use your password to log in!",
-      });
-    }
 
+    if (existingUser) {
+      // Check if the existing user has any social login ID
+      if (existingUser.googleLoginId || existingUser.facebookLoginId || existingUser.appleLoginId) {
+        // Issue JWT token
+        const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET, {
+          expiresIn: process.env.TOKEN_DURATION,
+        });
+
+        const isProfileCompleted = !!existingUser.password;
+        const isUpdateRequired = !!existingUser.phoneNumber;
+
+        return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      } else {
+        // User exists but has no social login ID, prompt for password login
+        return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
+          message: "Already registered. Use your password to log in!",
+        });
+      }
+    }
 
     // Validate that we have at least one social login ID and other necessary fields
     if (!googleLoginId && !facebookLoginId && !appleLoginId) {
@@ -237,28 +251,19 @@ const socialLogin = async (req, res) => {
     if (facebookLoginId) query.$or.push({ facebookLoginId });
     if (appleLoginId) query.$or.push({ appleLoginId });
 
-    // Check if at least one social login ID is provided
-    if (query.$or.length === 0) {
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
-        field_error: 'loginId',
-        message: "Missing social login ID",
-      });
-    }
-
     // Attempt to find an existing user with the provided social login ID
     let user = await User.findOne(query);
 
     if (user) {
-      // If user exists, check if password is set to determine profile completion status
-      const isProfileCompleted = !!user.password;
-      const isUpdateRequired = !!user.phoneNumber;
-
       // Issue JWT token
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.TOKEN_DURATION,
       });
 
-      ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      const isProfileCompleted = !!user.password;
+      const isUpdateRequired = !!user.phoneNumber;
+
+      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
     } else {
       // If user does not exist, create a new one
       user = new User({
@@ -286,6 +291,7 @@ const socialLogin = async (req, res) => {
     ErrorHandler.handleError(error, res);
   }
 };
+
 
 const login = async (req, res) => {
   try {
