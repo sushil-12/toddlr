@@ -265,10 +265,22 @@ const socialLogin = async (req, res) => {
 
       return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
     } else {
+      // Generate a unique username
+      const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      const uniqueUsername = `${username}-${uniqueSuffix}`;
+
+      // If you want to ensure that this username is unique in the database, you might want to check for it
+      const existingUsername = await User.findOne({ username: uniqueUsername });
+      if (existingUsername) {
+        return ResponseHandler.error(res, HTTP_STATUS_CODES.CONFLICT, {
+          message: "Username is already taken. Please choose another one.",
+        });
+      }
+
       // If user does not exist, create a new one
       user = new User({
         email,
-        username,
+        username: uniqueUsername,
         isEmailVerified: true,
         profile_pic: profilePic,
         googleLoginId: googleLoginId || null,
@@ -291,6 +303,7 @@ const socialLogin = async (req, res) => {
     ErrorHandler.handleError(error, res);
   }
 };
+
 
 
 const login = async (req, res) => {
