@@ -7,6 +7,7 @@ const { createEditPost, getAllPosts, getPostById, deletePost, quickEditPost, get
 const { createEditCategory, getAllCategories, getCategoryById } = require('../controllers/protected/CategoryController');
 const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCustomField } = require('../controllers/protected/CustomFieldTemplateController');
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
+const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
 
 const router = express.Router();
 
@@ -32,7 +33,11 @@ router.put('/edit/media', editMedia);
 router.delete('/delete/media/:media_id', deleteMedia);
 
 router.post('/create-or-update/post', createEditPost);
+
+router.post('/add-toddler', addToddlers)
+router.get('/list-toddler', listToddlers)
 router.get('/get-all-post/:post_type', getAllPosts);
+
 router.get('/get-all-post-and-pages/:type', getAllPostTypesAndPages);
 router.get('/get-post/:post_id', getPostById);
 router.patch('/quick-edit-post/:post_id', quickEditPost);
