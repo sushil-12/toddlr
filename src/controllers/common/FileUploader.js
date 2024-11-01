@@ -10,47 +10,48 @@ const upload = multer({ storage: storage });
 
 const uploadMediaToLibrary = async (req, res) => {
   try {
-    const domainHeader = req.headers['domain'];
-    upload.single('file')(req, res, async (err) => {
-      if (err) {
-        throw new CustomError(400, 'Error handling file upload.');
+    // Ensure the single file upload field is named "file"
+    upload.single("image")(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        console.error("Multer error:", err);
+        return ErrorHandler.handleError(new CustomError(400, `Multer error: ${err.message}`), res);
+      } else if (err) {
+        console.error("Unexpected error:", err);
+        return ErrorHandler.handleError(new CustomError(500, "Unexpected error during file upload."), res);
       }
 
-      const b64 = Buffer.from(req.file.buffer).toString("base64");
-      let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
-      const uploadInfo = await handleUpload(dataURI, req.file.originalname, req);
-     
-
-      if (!uploadInfo) {
-        throw new CustomError(500, 'Failed to upload one or more images to Cloudinary.');
+      // Ensure the file is provided
+      if (!req.file) {
+        return ErrorHandler.handleError(new CustomError(400, "No file provided for upload."), res);
       }
 
-      const uploadedMedia = {
-        title: req.body.title ? req.body.title : req.file.originalname.replace(/\.[^.]*$/, ''),
-        caption: req.body.caption ? req.body.caption : '',
-        description: req.body.description ? req.body.description : 'upload file to tofflr',
-        alt_text: req.body.alt_text ? req.body.alt_text : 'upload file to tofflr',
-        filename: req.body.filename ? req.file.originalname : 'upload file to tofflr',
-        cloudinary_id: uploadInfo.cloudinary_id,
-        url: uploadInfo.url,
-        size: (uploadInfo.size),
-        width: uploadInfo.width,
-        height: uploadInfo?.height,
-        resource_type: uploadInfo.resource_type,
-        format:uploadInfo?.format,
-        storage_type: 'cloudinary',
-        author: req.userId, // Ensure req.user is defined
-        category: req.body.category ? req.file.category : '',
-        tags: req.body.tags,
-        domain: domainHeader,
-      };
+      try {
+        const b64 = Buffer.from(req.file.buffer).toString("base64");
+        const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+        const uploadInfo = await handleUpload(dataURI, req.file.originalname, req);
 
-      const savedMedia = await Media.create(uploadedMedia);
+        if (!uploadInfo || !uploadInfo.url) {
+          throw new CustomError(500, "Failed to upload image to Cloudinary.");
+        }
 
-      ResponseHandler.success(res, savedMedia, 200);
+        const uploadedMedia = {
+          title: req.body.title || req.file.originalname.replace(/\.[^.]*$/, ""),
+          cloudinary_id: uploadInfo.public_id,
+          url: uploadInfo.url,
+          // Additional properties as needed
+        };
+
+        const savedMedia = await Media.create(uploadedMedia);
+        return ResponseHandler.success(res, savedMedia, 200);
+
+      } catch (cloudinaryError) {
+        console.error("Cloudinary upload error:", cloudinaryError);
+        return ErrorHandler.handleError(new CustomError(500, "Error during Cloudinary upload."), res);
+      }
     });
-  } catch (error) {
-    ErrorHandler.handleError(error, res);
+  } catch (generalError) {
+    console.error("Unexpected error:", generalError);
+    return ErrorHandler.handleError(new CustomError(500, "An unexpected error occurred."), res);
   }
 };
 
