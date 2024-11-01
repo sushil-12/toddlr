@@ -61,7 +61,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use('/auth', authRoutes);
 
 // Common routes
-// app.use('/api/common', commonRoutes);
+app.use('/api/common', commonRoutes);
 
 // Protected routes
 app.use('/api', protectedRoutes);

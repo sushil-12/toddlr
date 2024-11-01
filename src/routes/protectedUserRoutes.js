@@ -8,6 +8,7 @@ const { createEditCategory, getAllCategories, getCategoryById } = require('../co
 const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCustomField } = require('../controllers/protected/CustomFieldTemplateController');
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
+const { createAndUpdateProduct } = require('../controllers/protected/ProductController');
 
 const router = express.Router();
 
@@ -36,6 +37,10 @@ router.post('/create-or-update/post', createEditPost);
 
 router.post('/add-toddler', addToddlers)
 router.get('/list-toddler', listToddlers)
+
+router.post('/add-update-product', createAndUpdateProduct)
+
+
 router.get('/get-all-post/:post_type', getAllPosts);
 
 router.get('/get-all-post-and-pages/:type', getAllPostTypesAndPages);

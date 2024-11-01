@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const ToddlerSchema = new Schema({
   parentId: {
     type: Schema.Types.ObjectId,
-    ref: 'Parent',  // assuming there's a Parent model
+    ref: 'User',  // assuming there's a Parent model
     required: true,
   },
   childName: {
