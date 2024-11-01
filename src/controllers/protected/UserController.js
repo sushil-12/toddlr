@@ -54,6 +54,7 @@ const getProfile = async (req, res) => {
       role: user.role?.name,
       permissions: user.permissions,
       isEmailVerified: user?.isEmailVerified,
+      isOnBoardingComplete: user?.isOnBoardingComplete,
       temp_email: user?.temp_email
 
     };
@@ -399,6 +400,58 @@ const createOrEditUser = async (req, res) => {
   }
 };
 
+const editUserProfile = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    // Extract fields from the request body
+    const { username, email, firstName, lastName, bio, profile_pic, temp_email, isOnBoardingComplete } = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new CustomError(404, 'User not found');
+    }
+
+    // Update fields only if they are provided in the request
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (bio) user.bio = bio;
+    if (profile_pic) user.profile_pic = profile_pic;
+    if (temp_email) user.temp_email = temp_email;
+    if (isOnBoardingComplete) user.isOnBoardingComplete = isOnBoardingComplete;
+    
+
+    // Save the updated user
+    await user.save();
+
+    // Response with updated profile information
+    const updatedUserProfile = {
+      id: user._id,
+      username: user.username,
+      isOnBoardingComplete: user.isOnBoardingComplete,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      bio: user.bio,
+      profile_pic: user.profile_pic,
+      temp_email: user.temp_email,
+      role: user.role?.name,
+      permissions: user?.permissions,
+      isEmailVerified: user?.isEmailVerified,
+    };
+
+    ResponseHandler.success(res, updatedUserProfile, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+
 const getUserProfile = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
@@ -412,6 +465,7 @@ const getUserProfile = async (req, res) => {
 
     const userProfile = {
       id: user._id,
+      isOnBoardingComplete: user.isOnBoardingComplete,
       username: user.username,
       email: user.email,
       firstName: user.firstName,
@@ -552,5 +606,5 @@ const deleteUser = async (req, res) => {
 }
 
 module.exports = {
-  getProfile, checkPassword, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
+  getProfile, editUserProfile, checkPassword, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
 };

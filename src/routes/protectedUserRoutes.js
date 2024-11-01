@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
-const { getProfile, checkPassword, sendOtpVerificationOnEmail, logout, saveSidebarData, getSidebarData, verifyEmail, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser } = require('../controllers/protected/UserController');
+const { getProfile, checkPassword, sendOtpVerificationOnEmail, logout, saveSidebarData, getSidebarData, verifyEmail, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, editUserProfile } = require('../controllers/protected/UserController');
 const { uploadMediaToLibrary, deleteMedia } = require('../controllers/common/FileUploader');
 const { getAllMedia, editMedia, getAllImages } = require('../controllers/common/MediaOperations');
 const { createEditPost, getAllPosts, getPostById, deletePost, quickEditPost, getAllPostTypesAndPages, listFiles } = require('../controllers/protected/PostOperations');
@@ -15,6 +15,8 @@ router.use(verifyToken);
 
 // Protected routes
 router.get('/profile', getProfile);
+router.post('/update-profile', editUserProfile);
+
 router.get('/sign-out', logout);
 router.post('/save-sidebar-data', saveSidebarData);
 router.get('/get-sidebar-data', getSidebarData);

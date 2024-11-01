@@ -32,7 +32,7 @@ admin.initializeApp({
 const createDynamicLink = async (link) => {
   const apiKey = process.env.FIREBASE_API_KEY; // Replace with your Firebase web API key
   const dynamicLinkDomain = 'https://toddlr.page.link'; // Change this to your dynamic link domain
-    console.log("LINK", link)
+  console.log("LINK", link)
   const requestBody = {
     dynamicLinkInfo: {
       domainUriPrefix: dynamicLinkDomain,
@@ -325,7 +325,7 @@ const login = async (req, res) => {
     }
 
     let user;
-    if(form_type == "forgot_password_form"){
+    if (form_type == "forgot_password_form") {
       user = await User.findOne({
         email,
         deleted_at: null
@@ -390,6 +390,12 @@ const login = async (req, res) => {
       throw new CustomError(400, 'Password is required!');
     }
     console.log("PAS", user, password)
+    if (!user.password) {
+      if (user.googleLoginId || user.facebookLoginId || user.appleLoginId) {
+        ResponseHandler.success(res, { message: 'You have signed up with a social login method.' }, HTTP_STATUS_CODES.UNAUTHORIZED);
+        return;
+      }
+    }
     const passwordMatch = await bcrypt.compare(password, user.password);
     let incorrectAttempts = user.incorrectAttempts || 0;
     if (!passwordMatch) {
@@ -477,10 +483,11 @@ const login = async (req, res) => {
     user.signInTimestamp = sign_in_stamp
     user.save();
     let userData = await User.findById(user._id).populate('role');
+    const isOnBoardingComplete = userData?.isOnBoardingComplete ? userData?.isOnBoardingComplete : false;
     console.log(userData.role.name);
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: token_expiry });
 
-    ResponseHandler.success(res, { token }, HTTP_STATUS_CODES.OK);
+    ResponseHandler.success(res, { token, isOnBoardingComplete }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
