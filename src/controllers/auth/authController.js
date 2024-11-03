@@ -485,11 +485,26 @@ const login = async (req, res) => {
     let userData = await User.findById(user._id).populate('role');
     const isOnBoardingComplete = userData?.isOnBoardingComplete ? userData?.isOnBoardingComplete : false;
     const firstTimeToddlerAddCompleted = userData?.firstTimeToddlerAddCompleted ? userData?.firstTimeToddlerAddCompleted : false;
-
-    console.log(userData.role.name);
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: token_expiry });
 
-    ResponseHandler.success(res, { token, isOnBoardingComplete, firstTimeToddlerAddCompleted }, HTTP_STATUS_CODES.OK);
+   const userProfile = {
+      _id: userData._id,
+      username: userData.username,
+      email: userData.email,
+      firstName: userData.firstName,
+      bio: userData.bio,
+      profile_pic: userData.profile_pic,
+      lastName: userData.lastName,
+      role: userData.role?.name,
+      permissions: userData.permissions,
+      isEmailVerified: userData?.isEmailVerified,
+      isOnBoardingComplete: userData?.isOnBoardingComplete,
+      firstTimeToddlerAddCompleted: userData?.firstTimeToddlerAddCompleted,
+      temp_email: userData?.temp_email,
+      followers: userData?.followers
+
+    };
+    ResponseHandler.success(res, { token, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }

@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
   permissions: { type: Object, nullable: true },
   created_by: { type: String },
   deleted_at: { type: Date, default: null, nullable: true },
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Followers array
   phoneNumber: { type: String, required: false } // Mobile number field
 });
 

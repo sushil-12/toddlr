@@ -56,7 +56,8 @@ const getProfile = async (req, res) => {
       isEmailVerified: user?.isEmailVerified,
       isOnBoardingComplete: user?.isOnBoardingComplete,
       firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
-      temp_email: user?.temp_email
+      temp_email: user?.temp_email,
+      followers: user?.followers
 
     };
     console.log("USER TEMP EMAIL", user?.temp_email)
