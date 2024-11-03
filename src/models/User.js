@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
   verificationLinkExpiryTime: { type: Date },
   staySignedIn: { type: Boolean, default: false },
   isOnBoardingComplete: { type: Boolean, default: false },
+  firstTimeToddlerAddCompleted: { type: Boolean, default: false },
   privacyPolicyAccepted: { type: Boolean, default: false },
   termsAndConditionAccepted: { type: Boolean, default: false },
   signInTimestamp: { type: Date },
