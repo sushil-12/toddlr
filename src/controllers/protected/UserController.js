@@ -55,6 +55,7 @@ const getProfile = async (req, res) => {
       permissions: user.permissions,
       isEmailVerified: user?.isEmailVerified,
       isOnBoardingComplete: user?.isOnBoardingComplete,
+      firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
       temp_email: user?.temp_email
 
     };
