@@ -208,7 +208,7 @@ const socialLogin = async (req, res) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      // Check if the existing user has any social login ID
+      // If the user exists, check for any existing social login ID
       if (existingUser.googleLoginId || existingUser.facebookLoginId || existingUser.appleLoginId) {
         // Issue JWT token
         const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET, {
@@ -227,7 +227,28 @@ const socialLogin = async (req, res) => {
       }
     }
 
-    // Validate that we have at least one social login ID and other necessary fields
+    // If the user doesn't exist based on the email, check for existing social login IDs
+    const existingSocialLoginId = await User.findOne({
+      $or: [
+        { googleLoginId },
+        { facebookLoginId },
+        { appleLoginId }
+      ]
+    });
+
+    if (existingSocialLoginId) {
+      // If a user with any of the social login IDs exists, issue a JWT token
+      const token = jwt.sign({ userId: existingSocialLoginId._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.TOKEN_DURATION,
+      });
+
+      const isProfileCompleted = !!existingSocialLoginId.password;
+      const isUpdateRequired = !!existingSocialLoginId.phoneNumber;
+
+      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+    }
+
+    // If no existing user, validate required fields for new user registration
     if (!googleLoginId && !facebookLoginId && !appleLoginId) {
       return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
         field_error: 'loginId',
@@ -241,68 +262,44 @@ const socialLogin = async (req, res) => {
       });
     }
 
-    // Build query for finding an existing user based on social login ID
-    const query = {
-      deleted_at: null,
-      $or: []
-    };
+    // Generate a unique username if the provided one is already taken
+    const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const uniqueUsername = `${username}-${uniqueSuffix}`;
 
-    if (googleLoginId) query.$or.push({ googleLoginId });
-    if (facebookLoginId) query.$or.push({ facebookLoginId });
-    if (appleLoginId) query.$or.push({ appleLoginId });
-
-    // Attempt to find an existing user with the provided social login ID
-    let user = await User.findOne(query);
-
-    if (user) {
-      // Issue JWT token
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.TOKEN_DURATION,
+    // Check if the username already exists in the database
+    const existingUsername = await User.findOne({ username: uniqueUsername });
+    if (existingUsername) {
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.CONFLICT, {
+        message: "Username is already taken. Please choose another one.",
       });
-
-      const isProfileCompleted = !!user.password;
-      const isUpdateRequired = !!user.phoneNumber;
-
-      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
-    } else {
-      // Generate a unique username
-      const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-      const uniqueUsername = `${username}-${uniqueSuffix}`;
-
-      // If you want to ensure that this username is unique in the database, you might want to check for it
-      const existingUsername = await User.findOne({ username: uniqueUsername });
-      if (existingUsername) {
-        return ResponseHandler.error(res, HTTP_STATUS_CODES.CONFLICT, {
-          message: "Username is already taken. Please choose another one.",
-        });
-      }
-
-      // If user does not exist, create a new one
-      user = new User({
-        email,
-        username: uniqueUsername,
-        isEmailVerified: true,
-        profile_pic: profilePic,
-        googleLoginId: googleLoginId || null,
-        facebookLoginId: facebookLoginId || null,
-        appleLoginId: appleLoginId || null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      await user.save();
-
-      // Generate token for the new user
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.TOKEN_DURATION,
-      });
-
-      ResponseHandler.success(res, { token, isProfileCompleted: false, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
     }
+
+    // Create a new user if no existing one was found
+    const newUser = new User({
+      email,
+      username: uniqueUsername,
+      isEmailVerified: true,
+      profile_pic: profilePic,
+      googleLoginId: googleLoginId || null,
+      facebookLoginId: facebookLoginId || null,
+      appleLoginId: appleLoginId || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await newUser.save();
+
+    // Generate token for the new user
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.TOKEN_DURATION,
+    });
+
+    ResponseHandler.success(res, { token, isProfileCompleted: false, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
 };
+
 
 
 
