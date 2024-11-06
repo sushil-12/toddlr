@@ -157,12 +157,14 @@ const sendVerificationEmail = async (email, username, verificationLink) => {
 
 const resendVerificationEmail = async (req, res) => {
   try {
+
     const { email } = req.body;
 
     // Find the user by email
     const user = await User.findOne({ email });
     if (!user || user.isEmailVerified) {
-      return ResponseHandler.error(res, 'User not found or already verified.', HTTP_STATUS_CODES.BAD_REQUEST);
+
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST,'User not found or already verified.');
     }
 
     // Generate a new verification token
@@ -183,7 +185,7 @@ const resendVerificationEmail = async (req, res) => {
     } else if (isIOS) {
       verificationLink = `https://yourdomain.com/verify-email?token=${verificationToken}`;
     } else {
-      verificationLink = `${process.env.WEB_APP_URL}/verify-email?token=${verificationToken}`;
+      verificationLink = `${process.env.FRONTEND_APP_URL}/verify-email?token=${verificationToken}`;
     }
 
     // Send the verification email
