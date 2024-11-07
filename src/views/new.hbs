@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+</head>
+<body>
+  <h1>{{title}}</h1>
+
+  <form action="/applinks" method="POST">
+    <label for="platform">Platform:</label>
+    <select name="platform" id="platform" required>
+      <option value="iOS">iOS</option>
+      <option value="Web">Web</option>
+      <option value="Web">Android</option>
+    </select>
+    <br>
+
+    <label for="url">URL:</label>
+    <input type="text" name="url" id="url" required>
+    <br>
+
+    <label for="description">Description:</label>
+    <textarea name="description" id="description"></textarea>
+    <br>
+
+    <button type="submit">Add App Link</button>
+  </form>
+
+  <a href="/">Back to List</a>
+</body>
+</html>
