@@ -218,7 +218,25 @@ const socialLogin = async (req, res) => {
         const isProfileCompleted = !!existingUser.password;
         const isUpdateRequired = !!existingUser.phoneNumber;
 
-        return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+        const userProfile = {
+          _id: existingUser._id,
+          username: existingUser.username,
+          email: existingUser.email,
+          firstName: existingUser.firstName,
+          bio: existingUser.bio,
+          profile_pic: existingUser.profile_pic,
+          lastName: existingUser.lastName,
+          role: existingUser.role?.name,
+          permissions: existingUser.permissions,
+          isEmailVerified: existingUser?.isEmailVerified,
+          isOnBoardingComplete: existingUser?.isOnBoardingComplete,
+          firstTimeToddlerAddCompleted: existingUser?.firstTimeToddlerAddCompleted,
+          temp_email: existingUser?.temp_email,
+          followers: existingUser?.followers
+
+        };
+
+        return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
       } else {
         // User exists but has no social login ID, prompt for password login
         return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
@@ -263,7 +281,26 @@ const socialLogin = async (req, res) => {
       const isProfileCompleted = !!user.password;
       const isUpdateRequired = !!user.phoneNumber;
 
-      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      const userProfile = {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        bio: user.bio,
+        profile_pic: user.profile_pic,
+        lastName: user.lastName,
+        role: user.role?.name,
+        permissions: user.permissions,
+        isEmailVerified: user?.isEmailVerified,
+        isOnBoardingComplete: user?.isOnBoardingComplete,
+        firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
+        temp_email: user?.temp_email,
+        followers: user?.followers
+
+      };
+
+
+      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
     } else {
       // Generate a unique username
       const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -292,12 +329,30 @@ const socialLogin = async (req, res) => {
 
       await user.save();
 
+      const userProfile = {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        bio: user.bio,
+        profile_pic: user.profile_pic,
+        lastName: user.lastName,
+        role: user.role?.name,
+        permissions: user.permissions,
+        isEmailVerified: user?.isEmailVerified,
+        isOnBoardingComplete: user?.isOnBoardingComplete,
+        firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
+        temp_email: user?.temp_email,
+        followers: user?.followers
+
+      };
+
       // Generate token for the new user
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.TOKEN_DURATION,
       });
 
-      ResponseHandler.success(res, { token, isProfileCompleted: false, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
+      ResponseHandler.success(res, { token, isProfileCompleted: false, ...userProfile, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
     }
   } catch (error) {
     ErrorHandler.handleError(error, res);
@@ -487,7 +542,7 @@ const login = async (req, res) => {
     const firstTimeToddlerAddCompleted = userData?.firstTimeToddlerAddCompleted ? userData?.firstTimeToddlerAddCompleted : false;
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: token_expiry });
 
-   const userProfile = {
+    const userProfile = {
       _id: userData._id,
       username: userData.username,
       email: userData.email,
