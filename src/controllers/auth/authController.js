@@ -252,6 +252,24 @@ const socialLogin = async (req, res) => {
       ]
     });
 
+    const userProfile = {
+      _id: existingSocialLoginId._id,
+      username: existingSocialLoginId.username,
+      email: existingSocialLoginId.email,
+      firstName: existingSocialLoginId.firstName,
+      bio: existingSocialLoginId.bio,
+      profile_pic: existingSocialLoginId.profile_pic,
+      lastName: existingSocialLoginId.lastName,
+      role: existingSocialLoginId.role?.name,
+      permissions: existingSocialLoginId.permissions,
+      isEmailVerified: existingSocialLoginId?.isEmailVerified,
+      isOnBoardingComplete: existingSocialLoginId?.isOnBoardingComplete,
+      firstTimeToddlerAddCompleted: existingSocialLoginId?.firstTimeToddlerAddCompleted,
+      temp_email: existingSocialLoginId?.temp_email,
+      followers: existingSocialLoginId?.followers
+
+    };
+
     if (existingSocialLoginId) {
       // If a user with any of the social login IDs exists, issue a JWT token
       const token = jwt.sign({ userId: existingSocialLoginId._id }, process.env.JWT_SECRET, {
@@ -261,7 +279,7 @@ const socialLogin = async (req, res) => {
       const isProfileCompleted = !!existingSocialLoginId.password;
       const isUpdateRequired = !!existingSocialLoginId.phoneNumber;
 
-      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
     }
 
     // If no existing user, validate required fields for new user registration
