@@ -1,0 +1,257 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* General layout */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f6;
+    padding: 30px;
+    color: #333;
+  }
+  
+  .swagger-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .swagger-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .swagger-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+  }
+  
+  .logs-list {
+    margin-top: 30px;
+  }
+  
+  .log-entry {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #f7f7f7;
+    padding: 15px;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .log-header:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .log-method {
+    font-weight: bold;
+    color: #4CAF50;
+  }
+  
+  .log-url {
+    color: #2196F3;
+    text-decoration: none;
+  }
+  
+  .log-time {
+    color: #888;
+  }
+  
+  .log-details {
+    padding: 15px;
+    background-color: #fafafa;
+    margin-top: 10px;
+    border-radius: 8px;
+    display: none;
+  }
+  
+  .log-section {
+    margin-bottom: 20px;
+  }
+  
+  .log-section h3 {
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .log-section h4 {
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  .log-section pre {
+    background-color: #333;
+    color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 0.9rem;
+  }
+  
+  .no-logs-message {
+    text-align: center;
+    color: #888;
+    font-size: 1.2rem;
+    margin-top: 40px;
+  }
+  
+
+  /* Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+h1 {
+  text-align: center;
+  color: #4CAF50;
+  margin: 20px 0;
+}
+
+a {
+  text-decoration: none;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+a:hover {
+  color: #333;
+}
+
+.container {
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
+  height: 150px;
+}
+
+form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #45a049;
+}
+
+button[type="submit"] {
+  width: auto;
+  margin-top: 10px;
+}
+
+table form {
+  display: inline;
+  margin: 0;
+}
+
+/* Additional styling for 'Back to List' links */
+a.back-link {
+  display: inline-block;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: #ddd;
+  color: #333;
+}
+
+a.back-link:hover {
+  background-color: #bbb;
+}

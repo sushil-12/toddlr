@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <style>/* Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+h1 {
+  text-align: center;
+  color: #4CAF50;
+  margin: 20px 0;
+}
+
+a {
+  text-decoration: none;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+a:hover {
+  color: #333;
+}
+
+.container {
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
+  height: 150px;
+}
+
+form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #45a049;
+}
+
+button[type="submit"] {
+  width: auto;
+  margin-top: 10px;
+}
+
+table form {
+  display: inline;
+  margin: 0;
+}
+
+/* Additional styling for 'Back to List' links */
+a.back-link {
+  display: inline-block;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: #ddd;
+  color: #333;
+}
+
+a.back-link:hover {
+  background-color: #bbb;
+}
+
+</style>
+</head>
+<body>
+  <h1>{{title}}</h1>
+
+  <a href="/applinks/new">Add New App Link</a>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>URL</th>
+        <th>Description</th>
+        <th>Timestamp</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each applinks}}
+        <tr>
+          <td>{{this.platform}}</td>
+          <td>{{this.url}}</td>
+          <td>{{this.description}}</td>
+          <td>{{this.request.timestamp}}</td>
+          <td>
+            <a href="/applinks/{{this._id}}/edit">Edit</a>
+            <form action="/applinks/{{this._id}}?_method=DELETE" method="POST" style="display:inline; backround:none; padding:0!important">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</body>
+</html>

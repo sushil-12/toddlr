@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Links</title>
+  <link rel="stylesheet" href="/style.css"> <!-- Custom styles -->
+  
+  <!-- Font Awesome CDN for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* Reset some default styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      line-height: 1.6;
+      margin-top: 40px;
+    }
+
+    .container {
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Header Styling */
+    .page-title {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      color: #4CAF50;
+    }
+
+    /* Card Container (Flexbox for responsive layout) */
+    .card-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    /* Individual Card Styling */
+    .card {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      text-align: center;
+      flex: 1 1 calc(33.333% - 20px); /* 3 cards per row */
+      max-width: 300px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-icon {
+      font-size: 4rem;
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .card-description {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .card-link {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .card-link:hover {
+      background-color: #45a049;
+    }
+    .card-title{
+        text-transform: capitalize;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .card-container {
+        justify-content: center;
+      }
+
+      .card {
+        flex: 1 1 calc(50% - 20px); /* 2 cards per row on medium screens */
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        flex: 1 1 100%; /* 1 card per row on small screens */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title">Explore Our Apps</h1>
+
+    <!-- Card Row -->
+    <div class="card-container">
+      {{#each applinks}}
+        <!-- Display a card for each app link -->
+        <div class="card">
+          <div class="card-icon">
+            <i class="{{iconClass}}"></i> <!-- Icon from backend data -->
+          </div>
+          <h3 class="card-title">{{platform}} App</h3>
+          <p class="card-description">{{description}}</p>
+          <a href="{{url}}" class="card-link">Download</a>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</body>
+</html>

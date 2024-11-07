@@ -96,6 +96,7 @@ const getProducts = async (req, res) => {
             minPrice,
             maxPrice,
             size,
+            age,
             page = 1,
             limit = 10,
         } = req.query;
@@ -106,6 +107,7 @@ const getProducts = async (req, res) => {
         if (gender) filter.gender = gender;
         if (condition) filter.condition = condition;
         if (size) filter.size = size;
+        if (age) filter.age = age;
         if (minPrice || maxPrice) {
             filter.price = {};
             if (minPrice) filter.price.$gte = Number(minPrice);

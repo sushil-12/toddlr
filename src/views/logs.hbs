@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/styles.css"> <!-- Add your custom CSS -->
+</head>
+<style>
+    /* Basic reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* General layout */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f7f6;
+  padding: 30px;
+}
+
+.swagger-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.swagger-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.swagger-header h1 {
+  font-size: 2.5rem;
+  color: #333;
+}
+
+.logs-list {
+  margin-top: 30px;
+}
+
+.log-entry {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  padding: 10px;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f7f7f7;
+  padding: 10px;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  border-radius: 8px;
+}
+
+.log-method {
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.log-url {
+  color: #2196F3;
+}
+
+.log-time {
+  color: #888;
+}
+
+.log-details {
+  padding: 10px;
+  background-color: #fafafa;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+.log-section {
+  margin-bottom: 15px;
+}
+
+.log-section h3 {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.log-section pre {
+  background-color: #333;
+  color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.log-section p {
+  color: #333;
+}
+
+</style>
+<body>
+  <div class="swagger-container">
+    <header class="swagger-header">
+      <h1>{{title}}</h1>
+    </header>
+
+    {{#if logs.length}}
+    <div class="logs-list">
+      {{#each logs}}
+      {{log this}} <!-- This will print the entire context of 'this' -->
+
+      <div class="log-entry">
+        <button class="log-header" onclick="toggleDetails(this)">
+          <span class="log-method">{{this.request.method}}</span> 
+          <span class="log-url">{{this.request.url}}</span>
+        </button>
+        <div class="log-details" style="display:none;">
+          <div class="log-section">
+            <h3>Request Data</h3>
+            <pre>{{this.request}}</pre>
+          </div>
+          <div class="log-section">
+            <h3>Response</h3>
+            <p style="color: green;margin-bottom:4px; margin-top:4px">Status: {{this.response.statusCode}}</p>
+            <pre>{{this.response.responseBody}}</pre>
+            <p style="color: red;margin-bottom:4px; margin-top:4px">Response Time: {{this.response.responseTime}} ms</p>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+    <p>No logs found.</p>
+    {{/if}}
+  </div>
+
+  <script>
+    // Function to toggle the visibility of request/response details
+    function toggleDetails(button) {
+      const details = button.nextElementSibling;
+      if (details.style.display === "none") {
+        details.style.display = "block";
+      } else {
+        details.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
