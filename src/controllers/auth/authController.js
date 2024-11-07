@@ -179,14 +179,7 @@ const resendVerificationEmail = async (req, res) => {
     const isIOS = req.body.platform === 'ios';
 
     // Construct verification link for each platform
-    let verificationLink;
-    if (isAndroid) {
-      verificationLink = `toddlr://verify-email?token=${verificationToken}`;
-    } else if (isIOS) {
-      verificationLink = `https://yourdomain.com/verify-email?token=${verificationToken}`;
-    } else {
-      verificationLink = `${process.env.FRONTEND_APP_URL}/verify-email?token=${verificationToken}`;
-    }
+    let verificationLink = await createDynamicLink(`https://toddlrapi.vercel.app/verify-email?screen=verify&token=${verificationToken}`);
 
     // Send the verification email
     await sendVerificationEmail(user.email, user.username, verificationLink);
@@ -229,7 +222,28 @@ const socialLogin = async (req, res) => {
       }
     }
 
-    // Validate that we have at least one social login ID and other necessary fields
+    // If the user doesn't exist based on the email, check for existing social login IDs
+    const existingSocialLoginId = await User.findOne({
+      $or: [
+        { googleLoginId },
+        { facebookLoginId },
+        { appleLoginId }
+      ]
+    });
+
+    if (existingSocialLoginId) {
+      // If a user with any of the social login IDs exists, issue a JWT token
+      const token = jwt.sign({ userId: existingSocialLoginId._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.TOKEN_DURATION,
+      });
+
+      const isProfileCompleted = !!existingSocialLoginId.password;
+      const isUpdateRequired = !!existingSocialLoginId.phoneNumber;
+
+      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+    }
+
+    // If no existing user, validate required fields for new user registration
     if (!googleLoginId && !facebookLoginId && !appleLoginId) {
       return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
         field_error: 'loginId',

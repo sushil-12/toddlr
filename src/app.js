@@ -14,7 +14,9 @@ const fs = require('fs');
 const sanitizeInput = require('./middleware/sanitizeRequest');
 const rateLimit = require('express-rate-limit');
 const passport = require('passport');
-const session = require('express-session')
+const session = require('express-session');
+const logRequestAndResponse = require('./middleware/logRequestAndResponse');
+const { getLogs } = require('./controllers/common/LogController');
 
 const app = express();
 
@@ -53,6 +55,9 @@ app.use(passport.session());
 // app.use(limiter);
 
 // Serve static assets
+app.use(logRequestAndResponse);
+app.get('/logs', getLogs);
+
 app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
 // Set Handlebars as the view engine
 app.set('view engine', 'hbs');

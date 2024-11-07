@@ -1,0 +1,114 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* General layout */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f6;
+    padding: 30px;
+    color: #333;
+  }
+  
+  .swagger-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .swagger-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .swagger-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+  }
+  
+  .logs-list {
+    margin-top: 30px;
+  }
+  
+  .log-entry {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #f7f7f7;
+    padding: 15px;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .log-header:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .log-method {
+    font-weight: bold;
+    color: #4CAF50;
+  }
+  
+  .log-url {
+    color: #2196F3;
+    text-decoration: none;
+  }
+  
+  .log-time {
+    color: #888;
+  }
+  
+  .log-details {
+    padding: 15px;
+    background-color: #fafafa;
+    margin-top: 10px;
+    border-radius: 8px;
+    display: none;
+  }
+  
+  .log-section {
+    margin-bottom: 20px;
+  }
+  
+  .log-section h3 {
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .log-section h4 {
+    font-size: 1rem;
+    color: #555;
+  }
+  
+  .log-section pre {
+    background-color: #333;
+    color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 0.9rem;
+  }
+  
+  .no-logs-message {
+    text-align: center;
+    color: #888;
+    font-size: 1.2rem;
+    margin-top: 40px;
+  }
+  
