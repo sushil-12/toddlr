@@ -33,17 +33,20 @@ const createDynamicLink = async (link) => {
   const apiKey = process.env.FIREBASE_API_KEY; // Replace with your Firebase web API key
   const dynamicLinkDomain = 'https://toddlr.page.link'; // Change this to your dynamic link domain
   console.log("LINK", link)
+  let fallbackLink = 'https://toddlrapi.vercel.app/app-card'
   const requestBody = {
     dynamicLinkInfo: {
       domainUriPrefix: dynamicLinkDomain,
       link: link,
       androidInfo: {
         androidPackageName: 'com.toddlr.app',
-        androidFallbackLink: link, // Fallback link for users without the app
+        androidFallbackLink: fallbackLink, // Fallback link for users without the app
       },
       iosInfo: {
-        iosBundleId: 'com.toddlr.app',
-        iosFallbackLink: link, // Fallback link for users without the app
+        iosBundleId: 'com.toddlr.app',  // Your iOS app's bundle ID
+        iosFallbackLink: fallbackLink,  // Fallback link for iOS users without the app
+        // Add your App Store ID here if available
+        iosAppStoreId: '6737461850', // Optional: Only if your app is on the App Store
       },
     },
     suffix: {
