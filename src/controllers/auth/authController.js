@@ -234,7 +234,7 @@ const socialLogin = async (req, res) => {
 
         };
 
-        return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+        return ResponseHandler.success(res, { token, isProfileCompleted, isSocialLogin:true, isUpdateRequired, ...userProfile, message: "Welcome Back!" }, HTTP_STATUS_CODES.OK);
       } else {
         // User exists but has no social login ID, prompt for password login
         return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
@@ -279,7 +279,7 @@ const socialLogin = async (req, res) => {
       const isProfileCompleted = !!existingSocialLoginId.password;
       const isUpdateRequired = !!existingSocialLoginId.phoneNumber;
 
-      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      return ResponseHandler.success(res, { token, isProfileCompleted, isSocialLogin:true, isUpdateRequired, ...userProfile, message: "Welcome Back!" }, HTTP_STATUS_CODES.OK);
     }
 
     // If no existing user, validate required fields for new user registration
@@ -337,7 +337,7 @@ const socialLogin = async (req, res) => {
       };
 
 
-      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      return ResponseHandler.success(res, { token, isProfileCompleted, isSocialLogin:true, isUpdateRequired, ...userProfile, message: "Welcome Back!" }, HTTP_STATUS_CODES.OK);
     } else {
       // Generate a unique username
       const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -389,7 +389,7 @@ const socialLogin = async (req, res) => {
         expiresIn: process.env.TOKEN_DURATION,
       });
 
-      ResponseHandler.success(res, { token, isProfileCompleted: false, ...userProfile, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
+      ResponseHandler.success(res, { token, isProfileCompleted: false, isSocialLogin:true, ...userProfile, message: "Welcome Folks!" }, HTTP_STATUS_CODES.CREATED);
     }
   } catch (error) {
     ErrorHandler.handleError(error, res);
@@ -596,7 +596,7 @@ const login = async (req, res) => {
       followers: userData?.followers
 
     };
-    ResponseHandler.success(res, { token, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted }, HTTP_STATUS_CODES.OK);
+    ResponseHandler.success(res, { token, isSocialLogin:false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
