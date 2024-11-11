@@ -496,22 +496,6 @@ const login = async (req, res) => {
       rem_attempts = parseInt(process.env.WRONG_ATTEMPT_COUNT - incorrectAttempts);
       if (incorrectAttempts > process.env.WRONG_ATTEMPT_COUNT || incorrectAttempts == process.env.WRONG_ATTEMPT_COUNT) {
         let toast_messaage = '';
-        // if (user.lastIncorrectNotificationAttempt == 0) {
-        //   toast_messaage = 'Restricted for 30 minutes';
-        //   restricted_till = parseInt(process.env.FIRST_TIME_BLOCK_DURATION);
-        //   user.login_expired_till = new Date(Date.now() + parseInt(process.env.FIRST_TIME_BLOCK_DURATION));
-        //   user.lastIncorrectNotificationAttempt = 1;
-        //   user.incorrectAttempts = 0;
-        //   user.save();
-        // }
-        // else {
-        //   toast_messaage = 'Restricted for 24 hours';
-        //   restricted_till = parseInt(process.env.SECOND_TIME_BLOCK_DURATION);
-        //   user.login_expired_till = new Date(Date.now() + parseInt(process.env.SECOND_TIME_BLOCK_DURATION));
-        //   user.lastIncorrectNotificationAttempt = 1;
-        //   user.incorrectAttempts = 0;
-        //   user.save();
-        // }
         ResponseHandler.success(res, { message: 'Wrong credentials' }, HTTP_STATUS_CODES.UNAUTHORIZED);
 
         return;
@@ -546,27 +530,9 @@ const login = async (req, res) => {
         const template = handlebars.compile(templateFile);
         const app_logo = `${process.env.APP_LOGO_PATH}`;
         const app_name = process.env.APP_NAME;
-
-        // const mailOptions = {
-        //   from: `"${app_name}" <${process.env.EMAIL_FROM}>`,
-        //   to: user?.email,
-        //   subject: 'Account Verification Email',
-        //   html: template({ otp, app_logo, app_name })
-        // };
-        // console.log("MAIL OPTIONS", mailOptions)
-        // Send email
-        // sendMail(mailOptions)
-        //   .then(() => {
-        //     ResponseHandler.success(res, { email_sent: true, otp, message: "Verification code sent successfully" }, HTTP_STATUS_CODES.OK);
-        //   })
-        //   .catch((error) => {
-        //     console.log(error, "EROR")
-        //     ResponseHandler.error(res, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, { field_error: 'password', email_sent: false, message: "Failed to send verification code" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR); return;
-        //   });
       } catch (error) {
         ErrorHandler.handleError(error, res);
       }
-      // return;
     }
 
     const token_expiry = staySignedIn == 'yes' ? process.env.STAY_SIGNEDIN_TOKEN_DURATION : process.env.NORMAL_TOKEN_DURATION;
