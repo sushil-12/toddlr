@@ -167,7 +167,7 @@ const resendVerificationEmail = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user || user.isEmailVerified) {
 
-      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST,'User not found or already verified.');
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, 'User not found or already verified.');
     }
 
     // Generate a new verification token
@@ -389,7 +389,7 @@ const socialLogin = async (req, res) => {
         expiresIn: process.env.TOKEN_DURATION,
       });
 
-      ResponseHandler.success(res, { token, isProfileCompleted: false, ...userProfile, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
+      ResponseHandler.success(res, { token, isProfileCompleted: false, updateDetailsInSocialLogin: true, ...userProfile, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
     }
   } catch (error) {
     ErrorHandler.handleError(error, res);
