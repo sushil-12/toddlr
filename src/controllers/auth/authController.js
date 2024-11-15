@@ -234,7 +234,7 @@ const socialLogin = async (req, res) => {
 
         };
 
-        return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+        return ResponseHandler.success(res, { token, isProfileCompleted, isSocialLogin:true, isUpdateRequired, ...userProfile, message: "Welcome Back!" }, HTTP_STATUS_CODES.OK);
       } else {
         // User exists but has no social login ID, prompt for password login
         return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, {
@@ -279,7 +279,7 @@ const socialLogin = async (req, res) => {
       const isProfileCompleted = !!existingSocialLoginId.password;
       const isUpdateRequired = !!existingSocialLoginId.phoneNumber;
 
-      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      return ResponseHandler.success(res, { token, isProfileCompleted, isSocialLogin:true, isUpdateRequired, ...userProfile, message: "Welcome Back!" }, HTTP_STATUS_CODES.OK);
     }
 
     // If no existing user, validate required fields for new user registration
@@ -337,7 +337,7 @@ const socialLogin = async (req, res) => {
       };
 
 
-      return ResponseHandler.success(res, { token, isProfileCompleted, isUpdateRequired, ...userProfile, message: "Login successful" }, HTTP_STATUS_CODES.OK);
+      return ResponseHandler.success(res, { token, isProfileCompleted, isSocialLogin:true, isUpdateRequired, ...userProfile, message: "Welcome Back!" }, HTTP_STATUS_CODES.OK);
     } else {
       // Generate a unique username
       const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -389,7 +389,7 @@ const socialLogin = async (req, res) => {
         expiresIn: process.env.TOKEN_DURATION,
       });
 
-      ResponseHandler.success(res, { token, isProfileCompleted: false, updateDetailsInSocialLogin: true, ...userProfile, message: "Registration and login successful" }, HTTP_STATUS_CODES.CREATED);
+      ResponseHandler.success(res, { token, isProfileCompleted: false, isSocialLogin:true, updateDetailsInSocialLogin: true, ...userProfile, message: "Welcome Folks!" }, HTTP_STATUS_CODES.CREATED);
     }
   } catch (error) {
     ErrorHandler.handleError(error, res);
@@ -496,22 +496,6 @@ const login = async (req, res) => {
       rem_attempts = parseInt(process.env.WRONG_ATTEMPT_COUNT - incorrectAttempts);
       if (incorrectAttempts > process.env.WRONG_ATTEMPT_COUNT || incorrectAttempts == process.env.WRONG_ATTEMPT_COUNT) {
         let toast_messaage = '';
-        // if (user.lastIncorrectNotificationAttempt == 0) {
-        //   toast_messaage = 'Restricted for 30 minutes';
-        //   restricted_till = parseInt(process.env.FIRST_TIME_BLOCK_DURATION);
-        //   user.login_expired_till = new Date(Date.now() + parseInt(process.env.FIRST_TIME_BLOCK_DURATION));
-        //   user.lastIncorrectNotificationAttempt = 1;
-        //   user.incorrectAttempts = 0;
-        //   user.save();
-        // }
-        // else {
-        //   toast_messaage = 'Restricted for 24 hours';
-        //   restricted_till = parseInt(process.env.SECOND_TIME_BLOCK_DURATION);
-        //   user.login_expired_till = new Date(Date.now() + parseInt(process.env.SECOND_TIME_BLOCK_DURATION));
-        //   user.lastIncorrectNotificationAttempt = 1;
-        //   user.incorrectAttempts = 0;
-        //   user.save();
-        // }
         ResponseHandler.success(res, { message: 'Wrong credentials' }, HTTP_STATUS_CODES.UNAUTHORIZED);
 
         return;
@@ -546,27 +530,9 @@ const login = async (req, res) => {
         const template = handlebars.compile(templateFile);
         const app_logo = `${process.env.APP_LOGO_PATH}`;
         const app_name = process.env.APP_NAME;
-
-        // const mailOptions = {
-        //   from: `"${app_name}" <${process.env.EMAIL_FROM}>`,
-        //   to: user?.email,
-        //   subject: 'Account Verification Email',
-        //   html: template({ otp, app_logo, app_name })
-        // };
-        // console.log("MAIL OPTIONS", mailOptions)
-        // Send email
-        // sendMail(mailOptions)
-        //   .then(() => {
-        //     ResponseHandler.success(res, { email_sent: true, otp, message: "Verification code sent successfully" }, HTTP_STATUS_CODES.OK);
-        //   })
-        //   .catch((error) => {
-        //     console.log(error, "EROR")
-        //     ResponseHandler.error(res, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, { field_error: 'password', email_sent: false, message: "Failed to send verification code" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR); return;
-        //   });
       } catch (error) {
         ErrorHandler.handleError(error, res);
       }
-      // return;
     }
 
     const token_expiry = staySignedIn == 'yes' ? process.env.STAY_SIGNEDIN_TOKEN_DURATION : process.env.NORMAL_TOKEN_DURATION;
@@ -596,7 +562,7 @@ const login = async (req, res) => {
       followers: userData?.followers
 
     };
-    ResponseHandler.success(res, { token, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted }, HTTP_STATUS_CODES.OK);
+    ResponseHandler.success(res, { token, isSocialLogin:false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
