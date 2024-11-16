@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const { CustomError, ResponseHandler, ErrorHandler } = require("../../utils/responseHandler");
 const Product = require("../../models/Product");
 const jwt = require('jsonwebtoken');
+const { getUserRepository } = require("./UserController");
 
 
 const createAndUpdateProduct = async (req, res) => {
@@ -140,6 +141,7 @@ const getProductDetails = async (req, res) => {
 
         // Fetch product details by ID
         const product = await Product.findById(id);
+        const sellerDetail = await getUserRepository(product.createdBy);
 
         // If product not found, respond with an error
         if (!product) {
@@ -147,7 +149,7 @@ const getProductDetails = async (req, res) => {
         }
 
         // Respond with the product details
-        return ResponseHandler.success(res, product, 200, 'Product retrieved successfully');
+        return ResponseHandler.success(res, { product, sellerDetail }, 200, 'Product retrieved successfully');
     } catch (error) {
         console.error(error);
         ErrorHandler.handleError(error, res);

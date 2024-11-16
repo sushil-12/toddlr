@@ -31,6 +31,63 @@ const defaultSidebarJson = {
   }
 }
 
+const getUserRepository = async (userId) => {
+  const user = await User.findById(userId);
+  const userProfile = {
+    _id: user._id,
+    username: user.username,
+    email: user.email,
+    firstName: user.firstName,
+    bio: user.bio || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque a erat ac ipsum sagittis elementum',
+    profile_pic: user.profile_pic,
+    lastName: user.lastName,
+    role: user.role?.name,
+    permissions: user.permissions,
+    isEmailVerified: user?.isEmailVerified,
+    isOnBoardingComplete: user?.isOnBoardingComplete,
+    firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
+    temp_email: user?.temp_email,
+    followers: user?.followers?.length || '44+',
+    rating: user?.rating || '4.5'
+  };
+
+  return userProfile;
+};
+
+const getUsersProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).populate('role').populate('permissions');
+    if (!user) {
+      throw new CustomError(404, 'User not found');
+    }
+
+
+    const userProfile = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      bio: user.bio,
+      profile_pic: user.profile_pic,
+      lastName: user.lastName,
+      role: user.role?.name,
+      permissions: user.permissions,
+      isEmailVerified: user?.isEmailVerified,
+      isOnBoardingComplete: user?.isOnBoardingComplete,
+      firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
+      temp_email: user?.temp_email,
+      followers: user?.followers
+
+    };
+
+    ResponseHandler.success(res, userProfile, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 const getProfile = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
@@ -426,7 +483,7 @@ const editUserProfile = async (req, res) => {
     if (profile_pic) user.profile_pic = profile_pic;
     if (temp_email) user.temp_email = temp_email;
     if (isOnBoardingComplete) user.isOnBoardingComplete = isOnBoardingComplete;
-    
+
 
     // Save the updated user
     await user.save();
@@ -464,23 +521,7 @@ const getUserProfile = async (req, res) => {
       throw new CustomError(404, 'User not found');
     }
 
-
-    const userProfile = {
-      id: user._id,
-      isOnBoardingComplete: user.isOnBoardingComplete,
-      username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      bio: user.bio,
-      profile_pic: user.profile_pic,
-      lastName: user.lastName,
-      role: user.role?.name,
-      permissions: user?.permissions,
-      isEmailVerified: user?.isEmailVerified,
-      temp_email: user?.temp_email
-
-    };
-
+    const userProfile = await getUserRepository(userId);
     ResponseHandler.success(res, userProfile, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
@@ -608,5 +649,5 @@ const deleteUser = async (req, res) => {
 }
 
 module.exports = {
-  getProfile, editUserProfile, checkPassword, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
+  getProfile, getUsersProfile, getUserRepository, editUserProfile, checkPassword, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
 };
