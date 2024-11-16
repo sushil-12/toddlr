@@ -8,7 +8,7 @@ const { createEditCategory, getAllCategories, getCategoryById } = require('../co
 const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCustomField } = require('../controllers/protected/CustomFieldTemplateController');
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
-const { createAndUpdateProduct, getProducts } = require('../controllers/protected/ProductController');
+const { createAndUpdateProduct, getProducts, getProductDetails } = require('../controllers/protected/ProductController');
 
 const router = express.Router();
 
@@ -40,7 +40,7 @@ router.get('/list-toddler', listToddlers)
 
 router.post('/add-update-product/:id?', createAndUpdateProduct)
 router.get('/list-all-products', getProducts);
-
+router.get('/get-product-details/:id', getProductDetails);
 
 router.get('/get-all-post/:post_type', getAllPosts);
 

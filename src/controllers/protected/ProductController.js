@@ -133,6 +133,28 @@ const getProducts = async (req, res) => {
 };
 
 
+const getProductDetails = async (req, res) => {
+    try {
+        // Extract product ID from request parameters
+        const { id } = req.params;
+
+        // Fetch product details by ID
+        const product = await Product.findById(id);
+
+        // If product not found, respond with an error
+        if (!product) {
+            return ResponseHandler.error(res, null, 404, 'Product not found');
+        }
+
+        // Respond with the product details
+        return ResponseHandler.success(res, product, 200, 'Product retrieved successfully');
+    } catch (error) {
+        console.error(error);
+        ErrorHandler.handleError(error, res);
+    }
+};
+
+
 module.exports = {
-    createAndUpdateProduct, getProducts
+    createAndUpdateProduct, getProducts, getProductDetails
 };
