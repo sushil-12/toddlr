@@ -42,8 +42,8 @@ app.use(session({
     cookie: { secure: false }, // Set to true if using HTTPS
 }));
 // Middleware
-app.use(express.json({ limit: '5mb' }));  // Set payload size to 150kb
-app.use(express.urlencoded({ limit: '5mb', extended: true }));
+app.use(express.json({ limit: '25mb' }));  // Set payload size to 150kb
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 app.use(bodyParser.json());
 app.use(cors('*'));
 app.use(sanitizeInput);
