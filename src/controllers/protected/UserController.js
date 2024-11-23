@@ -33,25 +33,29 @@ const defaultSidebarJson = {
 
 const getUserRepository = async (userId) => {
   const user = await User.findById(userId);
-  const userProfile = {
-    _id: user._id,
-    username: user.username,
-    email: user.email,
-    firstName: user.firstName,
-    bio: user.bio || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque a erat ac ipsum sagittis elementum',
-    profile_pic: user.profile_pic,
-    lastName: user.lastName,
-    role: user.role?.name,
-    permissions: user.permissions,
-    isEmailVerified: user?.isEmailVerified,
-    isOnBoardingComplete: user?.isOnBoardingComplete,
-    firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
-    temp_email: user?.temp_email,
-    followers: user?.followers?.length || '44+',
-    rating: user?.rating || '4.5'
-  };
+  if (user) {
+    const userProfile = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      bio: user.bio || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque a erat ac ipsum sagittis elementum',
+      profile_pic: user.profile_pic,
+      lastName: user.lastName,
+      role: user.role?.name,
+      permissions: user.permissions,
+      isEmailVerified: user?.isEmailVerified,
+      isOnBoardingComplete: user?.isOnBoardingComplete,
+      firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
+      temp_email: user?.temp_email,
+      followers: user?.followers?.length || '44+',
+      rating: user?.rating || '4.5'
+    };
 
-  return userProfile;
+    return userProfile;
+  }
+  return null;
+
 };
 
 const getUsersProfile = async (req, res) => {
