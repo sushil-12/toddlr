@@ -1,155 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}}</title>
-  <link rel="stylesheet" href="/styles.css"> <!-- Add your custom CSS -->
-</head>
-<style>
-    /* Basic reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* General layout */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f7f6;
-  padding: 30px;
-}
-
-.swagger-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.swagger-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.swagger-header h1 {
-  font-size: 2.5rem;
-  color: #333;
-}
-
-.logs-list {
-  margin-top: 30px;
-}
-
-.log-entry {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  padding: 10px;
-}
-
-.log-header {
-  display: flex;
-  justify-content: space-between;
-  background-color: #f7f7f7;
-  padding: 10px;
-  font-size: 1.1rem;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  border-radius: 8px;
-}
-
-.log-method {
-  font-weight: bold;
-  color: #4CAF50;
-}
-
-.log-url {
-  color: #2196F3;
-}
-
-.log-time {
-  color: #888;
-}
-
-.log-details {
-  padding: 10px;
-  background-color: #fafafa;
-  margin-top: 10px;
-  border-radius: 8px;
-}
-
-.log-section {
-  margin-bottom: 15px;
-}
-
-.log-section h3 {
-  font-size: 1.2rem;
-  color: #333;
-}
-
-.log-section pre {
-  background-color: #333;
-  color: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.log-section p {
-  color: #333;
-}
-
-</style>
-<body>
-  <div class="swagger-container">
-    <header class="swagger-header">
-      <h1>{{title}}</h1>
-    </header>
-
-    {{#if logs.length}}
-    <div class="logs-list">
-      {{#each logs}}
-      {{log this}} <!-- This will print the entire context of 'this' -->
-
-      <div class="log-entry">
-        <button class="log-header" onclick="toggleDetails(this)">
-          <span class="log-method">{{this.request.method}}</span> 
-          <span class="log-url">{{this.request.url}}</span>
-        </button>
-        <div class="log-details" style="display:none;">
-          <div class="log-section">
-            <h3>Request Data</h3>
-            <pre>{{this.request}}</pre>
-          </div>
-          <div class="log-section">
-            <h3>Response</h3>
-            <p style="color: green;margin-bottom:4px; margin-top:4px">Status: {{this.response.statusCode}}</p>
-            <pre>{{this.response.responseBody}}</pre>
-            <p style="color: red;margin-bottom:4px; margin-top:4px">Response Time: {{this.response.responseTime}} ms</p>
-          </div>
-        </div>
-      </div>
-      {{/each}}
-    </div>
-    {{else}}
-    <p>No logs found.</p>
-    {{/if}}
-  </div>
-
-  <script>
-    // Function to toggle the visibility of request/response details
-    function toggleDetails(button) {
-      const details = button.nextElementSibling;
-      if (details.style.display === "none") {
-        details.style.display = "block";
-      } else {
-        details.style.display = "none";
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Events</title>
+    <style>
+      body{
+        padding: 25px;
       }
-    }
-  </script>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Socket.IO Events</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Event Name</th>
+            <th>Description</th>
+            <th>Payload Example</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>joinChat</td>
+            <td>Joins a chat room and fetches the chat history</td>
+            <td>
+                <pre>
+socket.emit('joinChat', { chatId: "6741e9df10ec6f46efb8f046" });
+                </pre>
+                <p><strong>Description:</strong> This event is triggered when a user joins a chat. It requests the server to send the chat history back to the client.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>sendMessage</td>
+            <td>Sends a new message to the chat room</td>
+            <td>
+                <pre>
+const message = {
+  sender: currentUser?.data?._id,
+  content: messageInput
+};
+socket.emit('sendMessage', chatId, message);
+                </pre>
+                <p><strong>Description:</strong> This event is triggered to send a new message to a specific chat room. The message includes the sender's ID and content.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>updateMessage</td>
+            <td>Updates a specific message's content in the chat</td>
+            <td>
+                <pre>
+const updatedContent = {
+  ...content,
+  action_done: true, // Example update
+  counter_price: counterPrice,
+  counter_description: counterDescription
+};
+socket.emit('updateMessage', chatId, messageKey, updatedContent);
+                </pre>
+                <p><strong>Description:</strong> This event updates a message's content in a chat. The event requires the message's key (ID), the chat ID, and the new content.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>chatHistory</td>
+            <td>Sends the chat history after joining a chat</td>
+            <td>
+                <pre>
+socket.on('chatHistory', (messages) => {
+  console.log(messages);
+  setMessages(messages); // Display the fetched chat history
+});
+                </pre>
+                <p><strong>Description:</strong> This event sends the entire chat history back to the client once a user joins the chat.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>messageUpdated</td>
+            <td>Sends the updated message to all participants in the chat</td>
+            <td>
+                <pre>
+socket.on('messageUpdated', (data) => {
+  console.log('Message Updated:', data);
+  // Handle the updated message here
+});
+                </pre>
+                <p><strong>Description:</strong> This event is triggered when a message is updated. All participants in the chat receive the updated message content.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>disconnect</td>
+            <td>Logs when a user disconnects from the chat server</td>
+            <td>
+                <pre>
+socket.on('disconnect', () => {
+  console.log('A user disconnected');
+});
+                </pre>
+                <p><strong>Description:</strong> This event is triggered when a user disconnects from the server. It is handled automatically by the server but can be listened to if needed.</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
 </body>
 </html>

@@ -1,59 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Socket.io Client</title>
-  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <title>API Documentation</title>
+  <!-- Swagger UI CSS CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.19.3/swagger-ui.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.min.css"
+    integrity="sha512-xRGj65XGEcpPTE7Cn6ujJWokpXVLxqLxdtNZ/n1w52+76XaCRO7UWKZl9yJHvzpk99A0EP6EW+opPcRwPDxwkA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 <body>
+  <div id="swagger-ui"></div>
 
-  <h1>Socket.io Client</h1>
-  <div id="chat">
-    <input type="text" id="senderID" placeholder="Type a senderID" />
-    <input type="text" id="messageInput" placeholder="Type a message" />
-    <button onclick="sendMessage()">Send</button>
-  </div>
-
-  <div id="messages"></div>
-
+  <!-- Swagger UI JS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.19.3/swagger-ui-bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.19.3/swagger-ui-standalone-preset.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.0/swagger-ui-bundle.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.0/swagger-ui-standalone-preset.js"></script>
   <script>
-    // Connect to the server
-    const socket = io('http://localhost:3000');
-
-    socket.on('connect', () => {
-      console.log('Connected to server:', socket.id);
-    });
-
-    // Listen for messages from the server
-    socket.on('message', (data) => {
-      console.log('Message from server:', data);
-      displayMessage(data);
-    });
-
-    // Send a message to the server
-    function sendMessage() {
-      const senderID = document.getElementById('senderID').value;
-      const message = document.getElementById('messageInput').value;
-
-      if (senderID.trim() && message.trim()) {
-        const messageData = { senderID, message };
-        socket.emit('message', messageData); // Send both senderID and message
-        document.getElementById('messageInput').value = ''; // Clear the message input
-        displayMessage('You (' + senderID + '): ' + message); // Display the sent message with senderID
-      } else {
-        alert("Please provide both senderID and message.");
+    const swaggerJson = {
+      "openapi": "3.0.0",
+      "info": {
+        "title": "Chat API",
+        "description": "API for managing chat functionality",
+        "version": "1.0.0"
+      },
+      "paths": {
+        "/api/common/chats": {
+          "post": {
+            "summary": "Create a new chat",
+            "operationId": "createChat",
+            "requestBody": {
+              "description": "Participants to create a chat",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "participants": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    },
+                    "required": ["participants"]
+                  },
+                  "example": {
+                    "participants": [
+                      "672c7fa7f51a18e04a3f69cd",
+                      "672c72edb749d926443b351e"
+                    ]
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Chat created successfully"
+                }
+              }
+            }
+          }
+        },
+        "/api/common/chats/{chatId}/messages": {
+          "post": {
+            "summary": "Send a message to the chat",
+            "operationId": "sendMessage",
+            "parameters": [
+              {
+                "name": "chatId",
+                "in": "path",
+                "required": true,
+                "description": "ID of the chat",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "requestBody": {
+              "description": "Message content",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "sender": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["sender", "content"]
+                  },
+                  "example": {
+                    "sender": "672c7fa7f51a18e04a3f69cd",
+                    "content": "Thanks!"
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Message sent successfully"
+                }
+              }
+            },
+            "get": {
+              "summary": "Get messages in a chat",
+              "operationId": "getMessages",
+              "parameters": [
+                {
+                  "name": "chatId",
+                  "in": "path",
+                  "required": true,
+                  "description": "ID of the chat",
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "List of messages in the chat",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "sender": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "content": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/common/users/{userId}/chats": {
+          "get": {
+            "summary": "Get all chats for a user",
+            "operationId": "getUserChats",
+            "parameters": [
+              {
+                "name": "userId",
+                "in": "path",
+                "required": true,
+                "description": "ID of the user",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "List of chats for the user",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "chatId": {
+                            "type": "string"
+                          },
+                          "participants": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/api/common/chats/{chatId}": {
+          "delete": {
+            "summary": "Delete a chat",
+            "operationId": "deleteChat",
+            "parameters": [
+              {
+                "name": "chatId",
+                "in": "path",
+                "required": true,
+                "description": "ID of the chat to delete",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Chat deleted successfully"
+              }
+            }
+          }
+        }
       }
     }
 
-    // Display message in the chat
-    function displayMessage(message) {
-      const messagesDiv = document.getElementById('messages');
-      const messageDiv = document.createElement('div');
-      messageDiv.textContent = message;
-      messagesDiv.appendChild(messageDiv);
-    }
+    const ui = SwaggerUIBundle({
+      spec: swaggerJson, // Specify the path to your swagger.json file
+      dom_id: '#swagger-ui',
+      deepLinking: true,
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIBundle.presets.sdk
+      ],
+      layout: "BaseLayout",
+    });
   </script>
-  
 </body>
+
 </html>

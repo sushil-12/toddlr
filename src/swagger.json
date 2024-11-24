@@ -1,0 +1,218 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Chat API",
+    "description": "API for managing chats and messages.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000", 
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/chats": {
+      "post": {
+        "summary": "Create a new chat",
+        "operationId": "createChat",
+        "tags": ["Chats"],
+        "responses": {
+          "201": {
+            "description": "Chat created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "chatId": {
+                      "type": "string",
+                      "description": "The unique ID of the created chat"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A confirmation message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        }
+      }
+    },
+    "/chats/{chatId}/messages": {
+      "post": {
+        "summary": "Send a message to a specific chat",
+        "operationId": "sendMessage",
+        "tags": ["Messages"],
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the chat to send the message to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sender": {
+                    "type": "string",
+                    "description": "The sender's ID"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "The message content"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent successfully"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        }
+      }
+    },
+    "/chats/{chatId}/messages": {
+      "get": {
+        "summary": "Get messages from a specific chat",
+        "operationId": "getMessages",
+        "tags": ["Messages"],
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the chat to fetch messages from"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sender": {
+                        "type": "string",
+                        "description": "The sender's ID"
+                      },
+                      "message": {
+                        "type": "string",
+                        "description": "The message content"
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Time when the message was sent"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chat not found"
+          }
+        }
+      }
+    },
+    "/users/{userId}/chats": {
+      "get": {
+        "summary": "Get all chats for a user",
+        "operationId": "getUserChats",
+        "tags": ["Chats"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the user to fetch chats for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User's chats retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "chatId": {
+                        "type": "string",
+                        "description": "The ID of the chat"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "When the chat was created"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/chats/{chatId}": {
+      "delete": {
+        "summary": "Delete a specific chat",
+        "operationId": "deleteChat",
+        "tags": ["Chats"],
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the chat to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat deleted successfully"
+          },
+          "404": {
+            "description": "Chat not found"
+          }
+        }
+      }
+    }
+  }
+}
