@@ -1,12 +1,14 @@
 const express = require('express');
 const { getAllDomain } = require('../controllers/common/DomainOperation');
 const { createEditNavigationItem, getAllNavigationItems, getNavigationItemById, quickEditNavItem } = require('../controllers/common/NavigationController');
-const { submitContactDetails } = require('../controllers/common/CommanController');
+const { submitContactDetails, createChat, sendMessage, getMessages, getUserChats, deleteChat } = require('../controllers/common/CommanController');
 const router = express.Router();
 const checkFormTypeMiddleware = require('../middleware/checkFormTypeMiddleware');
 const { uploadMediaToLibrary } = require('../controllers/common/FileUploader');
+const Chat = require('../models/Chat');
+const { default: mongoose } = require('mongoose');
 
-router.get('/get-all-domains',getAllDomain );
+router.get('/get-all-domains', getAllDomain);
 // API routes
 router.post('/create-or-edit/navigation-items', createEditNavigationItem);
 router.get('/navigation-items', getAllNavigationItems);
@@ -17,5 +19,20 @@ router.post('/media/upload', uploadMediaToLibrary);
 
 
 // router.post('/contact', checkFormTypeMiddleware, submitContactDetails);
-router.post('/contact',  submitContactDetails);
+router.post('/contact', submitContactDetails);
+
+
+// Chat API
+
+router.post('/chats', createChat);
+
+router.post('/chats/:chatId/messages', sendMessage);
+
+router.get('/chats/:chatId/messages', getMessages);
+
+router.get('/users/:userId/chats', getUserChats);
+
+router.delete('/chats/:chatId', deleteChat);
+
+
 module.exports = router;

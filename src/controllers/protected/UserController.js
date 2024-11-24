@@ -535,7 +535,7 @@ const getUserProfile = async (req, res) => {
 const getAllUser = async (req, res) => {
   try {
     // Extract and parse query parameters
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 20, search } = req.query;
 
     // Build the search query
     const query = {

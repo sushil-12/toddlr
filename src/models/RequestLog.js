@@ -11,7 +11,7 @@ const requestLogSchema = new mongoose.Schema({
     timestamp: { type: Date, required: false },
   },
   response: {
-    statusCode: { type: Number, required: false },
+    statusCode: { type: String, required: false },
     responseBody: { type: String, required: false },
     responseTime: { type: Number, required: false },
   },

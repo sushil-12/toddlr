@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.io Client</title>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+
+  <h1>Socket.io Client</h1>
+  <div id="chat">
+    <input type="text" id="senderID" placeholder="Type a senderID" />
+    <input type="text" id="messageInput" placeholder="Type a message" />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <div id="messages"></div>
+
+  <script>
+    // Connect to the server
+    const socket = io('http://localhost:3000');
+
+    socket.on('connect', () => {
+      console.log('Connected to server:', socket.id);
+    });
+
+    // Listen for messages from the server
+    socket.on('message', (data) => {
+      console.log('Message from server:', data);
+      displayMessage(data);
+    });
+
+    // Send a message to the server
+    function sendMessage() {
+      const senderID = document.getElementById('senderID').value;
+      const message = document.getElementById('messageInput').value;
+
+      if (senderID.trim() && message.trim()) {
+        const messageData = { senderID, message };
+        socket.emit('message', messageData); // Send both senderID and message
+        document.getElementById('messageInput').value = ''; // Clear the message input
+        displayMessage('You (' + senderID + '): ' + message); // Display the sent message with senderID
+      } else {
+        alert("Please provide both senderID and message.");
+      }
+    }
+
+    // Display message in the chat
+    function displayMessage(message) {
+      const messagesDiv = document.getElementById('messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = message;
+      messagesDiv.appendChild(messageDiv);
+    }
+  </script>
+  
+</body>
+</html>

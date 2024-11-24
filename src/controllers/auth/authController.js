@@ -566,7 +566,7 @@ const login = async (req, res) => {
       followers: userData?.followers
 
     };
-    ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted }, HTTP_STATUS_CODES.OK);
+    ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message:"Welocme Back!" }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }

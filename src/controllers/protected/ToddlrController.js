@@ -15,8 +15,9 @@ const addToddlers = async (req, res) => {
       throw new CustomError(400, 'Parent ID and toddlers array are required');
     }
 
+    console.log(toddlers)
     // Prepare toddler documents with parentId
-    const toddlerDocuments = toddlers.map((toddler) => ({
+    const toddlerDocuments = toddlers.map((toddler) => ( console.log(toddler),{
       parentId,
       childName: toddler.childName,
       gender: toddler.gender,

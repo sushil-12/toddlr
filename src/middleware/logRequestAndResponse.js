@@ -27,7 +27,7 @@ const logRequestAndResponse = async (req, res, next) => {
 
         // Ensure that statusCode is a valid number (fallback to 500 if it's invalid)
         const statusCode = (res.statusCode && !isNaN(res.statusCode)) ? res.statusCode : 500;
-
+        console.log(statusCode)
         logEntry.response.statusCode = statusCode;
         logEntry.response.responseBody = body;
         logEntry.response.responseTime = responseTime;
