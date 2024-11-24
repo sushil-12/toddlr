@@ -14,8 +14,7 @@ const ToddlerSchema = new Schema({
   gender: {
     type: String,
     enum: ['boy', 'girl', 'other','prefer_not_to_say'],
-    default: 'prefer_not_to_say',
-    required: true,
+    default: 'prefer_not_to_say'
   },
   birthDate: {
     type: Date,
