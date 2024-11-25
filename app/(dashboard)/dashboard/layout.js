@@ -10,8 +10,8 @@ const DashboardLayout = ({ children }) => {
     const router = useRouter();
 
     useEffect(() => {
-        initializeUser(); // Load user from localStorage
         if (!user) {
+            initializeUser(); // Load user from localStorage
             router.push("/login"); // Redirect to login if not authenticated
         }
     }, [user, router, initializeUser]);
