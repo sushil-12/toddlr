@@ -9,6 +9,7 @@ const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCust
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer } = require('../controllers/protected/ProductController');
+const { getBraintreeClientToken } = require('../controllers/protected/PaymentController');
 
 const router = express.Router();
 
