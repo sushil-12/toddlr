@@ -245,11 +245,11 @@ const getUserChats = async (req, res) => {
   try {
     // Find all chats where the user is a participant
     const chats = await Chat.find({ participants: userId })
-      .populate('participants', 'username email profilePicture') // Populate participants' details
+      .populate('participants', 'username email profile_pic') // Populate participants' details
       .populate({
         path: 'messages',
-        options: { sort: { createdAt: -1 } }, // Sort messages by recent first
-        select: 'content createdAt', // Select required message fields
+        options: { sort: { createdAt: -1 } }, // Sort messages by most recent first
+        select: 'content createdAt readBy', // Select necessary message fields
       });
 
     if (!chats || chats.length === 0) {
@@ -262,15 +262,14 @@ const getUserChats = async (req, res) => {
       const otherParticipant = chat.participants.find(
         (participant) => participant._id.toString() !== userId
       );
-      const otherUser = User.find()
 
       // Calculate unread message count for the current user
-      // const unreadMessageCount = chat.messages.reduce((count, message) => {
-      //   if (!message?.readBy.includes(userId)) {
-      //     return count + 1;
-      //   }
-      //   return count;
-      // }, 0);
+      const unreadMessageCount = chat.messages.reduce((count, message) => {
+        if (!message?.readBy?.includes(userId)) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
 
       // Get the most recent message
       const recentMessage = chat.messages[0];
@@ -278,15 +277,15 @@ const getUserChats = async (req, res) => {
       return {
         chatId: chat._id,
         otherUser: {
-          userId: otherParticipant._id,
-          username: otherParticipant.username,
-          profilePicture: otherParticipant.profilePicture,
+          userId: otherParticipant?._id,
+          username: otherParticipant?.username,
+          profilePicture: otherParticipant?.profile_pic || "", // Map profile_pic to profilePicture
         },
         recentMessage: {
           content: recentMessage?.content,
           createdAt: recentMessage?.createdAt,
         },
-        unreadMessageCount: 3,
+        unreadMessageCount,
       };
     });
 
