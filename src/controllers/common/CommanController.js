@@ -160,6 +160,72 @@ const getMessages = async (req, res) => {
 
 
 // Chat API - Get all chats for a specific user
+// const getUserChats = async (req, res) => {
+//   const { userId } = req.params;
+
+//   // Validate userId format
+//   if (!mongoose.Types.ObjectId.isValid(userId)) {
+//     throw new CustomError(400, 'Invalid user ID format');
+//   }
+
+//   try {
+//     // Find all chats where the user is a participant
+//     const chats = await Chat.find({ participants: userId })
+//       .populate('participants', 'username email'); // Populate participants' name and email
+
+//     if (!chats || chats.length === 0) {
+//       throw new CustomError(404, 'No chats found for this user');
+//     }
+
+//     // Iterate through each chat and check message contents
+//     const updatedChats = await Promise.all(
+//       chats.map(async (chat) => {
+//         // Modify messages if necessary
+//         const updatedMessages = await Promise.all(
+//           chat.messages.map(async (message) => {
+//             if (message.content && typeof message.content === 'object' && message.content.offer_id) {
+//               try {
+//                 // Fetch the offer and populate it
+//                 const offer = await Offer.findById(message.content.offer_id).populate('product');
+//                 const messageContent = message.content;
+//                 // Update the message content with populated offer details
+//                 message.content = {
+//                   offer_id: offer?._id,
+//                   offer_price: messageContent.offer_price,
+//                   product_name: offer.product.title,
+//                   seller_id: offer.product.createdBy,
+//                   product_image: offer.product.images[0], // Assuming images is an array
+//                   product_actual_price: offer.product.price,
+//                   status: messageContent.status,
+//                   currentStatus: offer?.status,
+//                   action_done: messageContent?.action_done || false,
+//                   offer_description: messageContent.offer_description,
+//                 };
+//               } catch (err) {
+//                 console.error('Error populating offer:', err);
+//                 message.content = {
+//                   ...message.content,
+//                   error: 'Failed to fetch offer details'
+//                 };
+//               }
+//             }
+//             return message;
+//           })
+//         );
+
+//         // Replace the chat messages with updated ones
+//         chat.messages = updatedMessages;
+//         return chat;
+//       })
+//     );
+
+//     // Send the updated chats in the response
+//     ResponseHandler.success(res, updatedChats, 200);
+//   } catch (error) {
+//     ErrorHandler.handleError(error, res);
+//   }
+// };
+
 const getUserChats = async (req, res) => {
   const { userId } = req.params;
 
@@ -171,60 +237,57 @@ const getUserChats = async (req, res) => {
   try {
     // Find all chats where the user is a participant
     const chats = await Chat.find({ participants: userId })
-      .populate('participants', 'username email'); // Populate participants' name and email
+      .populate('participants', 'username email profilePicture') // Populate participants' details
+      .populate({
+        path: 'messages',
+        options: { sort: { createdAt: -1 } }, // Sort messages by recent first
+        select: 'content createdAt', // Select required message fields
+      });
 
     if (!chats || chats.length === 0) {
       throw new CustomError(404, 'No chats found for this user');
     }
 
-    // Iterate through each chat and check message contents
-    const updatedChats = await Promise.all(
-      chats.map(async (chat) => {
-        // Modify messages if necessary
-        const updatedMessages = await Promise.all(
-          chat.messages.map(async (message) => {
-            if (message.content && typeof message.content === 'object' && message.content.offer_id) {
-              try {
-                // Fetch the offer and populate it
-                const offer = await Offer.findById(message.content.offer_id).populate('product');
-                const messageContent = message.content;
-                // Update the message content with populated offer details
-                message.content = {
-                  offer_id: offer?._id,
-                  offer_price: messageContent.offer_price,
-                  product_name: offer.product.title,
-                  seller_id: offer.product.createdBy,
-                  product_image: offer.product.images[0], // Assuming images is an array
-                  product_actual_price: offer.product.price,
-                  status: messageContent.status,
-                  currentStatus: offer?.status,
-                  action_done: messageContent?.action_done || false,
-                  offer_description: messageContent.offer_description,
-                };
-              } catch (err) {
-                console.error('Error populating offer:', err);
-                message.content = {
-                  ...message.content,
-                  error: 'Failed to fetch offer details'
-                };
-              }
-            }
-            return message;
-          })
-        );
+    // Structure the chat data
+    const userChats = chats.map((chat) => {
+      // Identify the other participant
+      const otherParticipant = chat.participants.find(
+        (participant) => participant._id.toString() !== userId
+      );
 
-        // Replace the chat messages with updated ones
-        chat.messages = updatedMessages;
-        return chat;
-      })
-    );
+      // Calculate unread message count for the current user
+      // const unreadMessageCount = chat.messages.reduce((count, message) => {
+      //   if (!message?.readBy.includes(userId)) {
+      //     return count + 1;
+      //   }
+      //   return count;
+      // }, 0);
 
-    // Send the updated chats in the response
-    ResponseHandler.success(res, updatedChats, 200);
+      // Get the most recent message
+      const recentMessage = chat.messages[0];
+
+      return {
+        chatId: chat._id,
+        otherUser: {
+          userId: otherParticipant._id,
+          username: otherParticipant.username,
+          profilePicture: otherParticipant.profilePicture,
+        },
+        recentMessage: {
+          content: recentMessage?.content,
+          createdAt: recentMessage?.createdAt,
+        },
+        unreadMessageCount: 3,
+      };
+    });
+
+    // Send the user chats in the response
+    ResponseHandler.success(res, userChats, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
 };
+
 
 // Chat API - Delete a chat
 const deleteChat = async (req, res) => {
