@@ -125,6 +125,9 @@ const getMessages = async (req, res) => {
     if (!chat) {
       throw new CustomError(400, 'Chat not found');
     }
+    if (chat) {
+      chat.messages = chat.messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
 
     // Iterate through each message to check if message.content is an object and needs manipulation
     const updatedMessages = await Promise.all(
