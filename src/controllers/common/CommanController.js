@@ -115,7 +115,7 @@ const getMessages = async (req, res) => {
     const chat = await Chat.findById(chatId)
       .populate({
         path: 'messages',
-        options: { sort: { timestamp: 1 } }, // Sort messages by timestamp in ascending order
+        options: { sort: { timestamp: -1 } }, // Sort messages by timestamp in ascending order
         populate: {
           path: 'sender',
           select: 'username email', // Fetch sender details
