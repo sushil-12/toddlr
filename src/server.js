@@ -101,8 +101,8 @@ io.on('connection', (socket) => {
 
   // Listen for new messages
   socket.on('sendMessage', async (chatId, message) => {
+    console.log("Message===>", message)
     const { sender, content } = message;
-
     try {
       const chat = await Chat.findByIdAndUpdate(
         chatId,
