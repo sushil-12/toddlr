@@ -112,7 +112,15 @@ const getMessages = async (req, res) => {
   const { chatId } = req.params;
 
   try {
-    const chat = await Chat.findById(chatId).populate('messages.sender', 'username email');
+    const chat = await Chat.findById(chatId)
+      .populate({
+        path: 'messages',
+        options: { sort: { timestamp: 1 } }, // Sort messages by timestamp in ascending order
+        populate: {
+          path: 'sender',
+          select: 'username email', // Fetch sender details
+        },
+      });
 
     if (!chat) {
       throw new CustomError(400, 'Chat not found');
@@ -254,6 +262,7 @@ const getUserChats = async (req, res) => {
       const otherParticipant = chat.participants.find(
         (participant) => participant._id.toString() !== userId
       );
+      const otherUser = User.find()
 
       // Calculate unread message count for the current user
       // const unreadMessageCount = chat.messages.reduce((count, message) => {
