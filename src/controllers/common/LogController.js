@@ -4,7 +4,7 @@ const RequestLog = require("../../models/RequestLog");
 const appLinks = async (req, res) => {
   try {
     // Fetch logs from the database, sorted by timestamp (most recent first)
-    const logs = await Applinks.find().sort({ 'request.timestamp': -1 });
+    const logs = [];
     // Render the 'logs' view with the fetched logs
     res.render('logs', { 
       logs, 
@@ -21,7 +21,8 @@ const appLinks = async (req, res) => {
 const getLogs = async (req, res) => {
   try {
     // Fetch logs from the database, sorted by timestamp (most recent first)
-    const logs = await RequestLog.find().sort({ 'request.timestamp': -1 });
+    // const logs = await RequestLog.find().sort({ 'request.timestamp': -1 });
+    const logs = [];
     // Render the 'logs' view with the fetched logs
     res.render('logs', { 
       logs, 
