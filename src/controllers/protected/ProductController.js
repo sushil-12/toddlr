@@ -251,11 +251,21 @@ const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
         participants: { $all: [userId, sellerId] },
     });
 
+
     if (chat) {
         // Add the new message to the existing chat
-        let oldMessage = chat.messages[messageKey];
-        oldMessage.content.action_done = true;
-        chat.messages[messageKey] = oldMessage;
+        const index = chat.messages.findIndex(message => message._id == messageKey); // Find index of the message
+        console.log(index);
+        if (index !== -1) {
+            // Message exists, update its content
+            chat.messages[index].content.action_done = true;
+            chat.markModified('messages');
+            await chat.save();
+        } else {
+            console.error("Message not found in chat.messages");
+        }
+
+        console.log(chat.messages[index])
         chat.messages.push(initialMessage);
         await chat.save();
     } else {
