@@ -9,7 +9,7 @@ const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCust
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer } = require('../controllers/protected/ProductController');
-const { getBraintreeClientToken } = require('../controllers/protected/PaymentController');
+const { getBraintreeClientToken, createTransactionBraintree } = require('../controllers/protected/PaymentController');
 
 const router = express.Router();
 
@@ -78,5 +78,7 @@ router.get('/get-website/:website_id', getWebsite);
 router.delete('/delete/website/:website_id', deleteWebsite);
 
 router.get('/list-files', listFiles);
+
+router.post('/create-transaction', createTransactionBraintree)
 
 module.exports = router;
