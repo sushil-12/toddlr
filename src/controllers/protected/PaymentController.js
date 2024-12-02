@@ -30,7 +30,12 @@ const getBraintreeClientToken = async(req,res) => {
 *  Create transaction api on braintree
 */
 const createTransactionBraintree = async(req,res)=>{
-    const {amount, paymentMethodNonce} = req.body
+
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const createdBy = decodedToken.userId;
+    const {amount, paymentMethodNonce, bundleDetails} = req.body
+    // bundle Details to save the items ordered in database
     // use nonce received from client, currently using statis nonce
     gateway.transaction.sale({
         amount: amount,
@@ -39,8 +44,13 @@ const createTransactionBraintree = async(req,res)=>{
             submitForSettlement: true
         }	
     }, (err,result)=> {
-
-        console.log("Error Received===>",err);
+        if(err){
+            ErrorHandler.handleError(err)
+        }
+        if(result){
+s
+            console.log("Result Received===>",result);
+        }
         
     })
 }
