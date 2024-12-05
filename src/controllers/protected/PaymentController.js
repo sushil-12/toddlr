@@ -48,7 +48,6 @@ const createTransactionBraintree = async(req,res)=>{
             ErrorHandler.handleError(err)
         }
         if(result){
-s
             console.log("Result Received===>",result);
         }
         

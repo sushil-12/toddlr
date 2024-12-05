@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const mongoosePaginate = require('mongoose-paginate-v2');
 
 const cartProductsSchema = new mongoose.Schema({
-    productId:{
+    product:{
         type: mongoose.Schema.Types.ObjectId,
         ref:'Product',
         required:true
@@ -11,17 +11,12 @@ const cartProductsSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    ownerId:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:'User',
-        required: true
-    },
     quantity:{
         type: Number,
         required: true
     }
-
 })
+
 const bundleSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
