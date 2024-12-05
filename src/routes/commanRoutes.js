@@ -7,6 +7,7 @@ const checkFormTypeMiddleware = require('../middleware/checkFormTypeMiddleware')
 const { uploadMediaToLibrary } = require('../controllers/common/FileUploader');
 const Chat = require('../models/Chat');
 const { default: mongoose } = require('mongoose');
+const { getBraintreeClientToken } = require('../controllers/protected/PaymentController');
 
 router.get('/get-all-domains', getAllDomain);
 // API routes
@@ -33,6 +34,8 @@ router.get('/chats/:chatId/messages', getMessages);
 router.get('/users/:userId/chats', getUserChats);
 
 router.delete('/chats/:chatId', deleteChat);
+
+router.get('/get-client-token', getBraintreeClientToken)
 
 
 module.exports = router;
