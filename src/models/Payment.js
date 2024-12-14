@@ -5,18 +5,20 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 const paymentSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',  // assuming there's a Parent model
+        ref: 'User',
         required: true,
     },
-    product: {
+    productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',  
-        required: true,
     },
-    offer: {
+    offerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Offer',  
-        required: true,
+    },
+    bundleId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Bundle',  
     },
     totalAmount: {
         type: Number,

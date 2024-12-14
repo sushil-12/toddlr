@@ -4,7 +4,10 @@ const OfferSchema = new mongoose.Schema({
     product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
-        required: true,
+    },
+    bundle: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Bundle',
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

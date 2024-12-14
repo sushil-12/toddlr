@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const { getUserRepository } = require("./UserController");
 const Offer = require("../../models/Offer");
 const Chat = require("../../models/Chat");
+const Bundle = require("../../models/Bundle");
 
 
 const createAndUpdateProduct = async (req, res) => {
@@ -239,6 +240,89 @@ const makeAnOffer = async (req, res) => {
     }
 };
 
+const makeAnOfferForBundle = async (req, res) => {
+    try {
+        // Extract payload from request body
+        const { offer_price, offer_description } = req.body;
+        const { bundleId } = req.params; // Assuming productId is passed as a URL parameter
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decodedToken.userId; // Assuming user ID is available from authentication middleware
+
+        // Validate required fields
+        if (!offer_price || !offer_description) {
+            throw new CustomError(400, 'Offer price and description are required');
+        }
+
+        // Fetch the product to ensure it exists
+        const product = await Bundle.findById(bundleId).populate('createdBy', '_id username email');
+        if (!product) {
+            throw new CustomError(400, 'Bundle not found');
+        }
+
+        console.log(product, "PRODUCT")
+        // Extract seller details
+        const seller = product.createdBy;
+        if (!seller) {
+            throw new CustomError(400, 'Seller details not found for the product');
+        }
+
+        // Create the offer
+        const offer = await Offer.create({
+            bundle: bundleId,
+            user: userId,
+            price: offer_price,
+            description: offer_description,
+        });
+
+
+        // Initial offer message
+        const initialMessage = {
+            sender: userId,
+            content: {
+                isBundle: true,
+                offer_id: offer?._id,
+                offer_price,
+                // product_name: product.title,
+                seller_id: product.createdBy,
+                // product_image: product.images[0], // Assuming `image` is a field in the product schema
+                bundle_actual_price: product.totalAmount,
+                status: offer?.status,
+                offer_description,
+            },
+            createdAt: new Date(),
+        };
+
+        // Check if a chat already exists between the buyer and seller
+        let chat = await Chat.findOne({
+            participants: { $all: [userId, seller._id] },
+        });
+
+        if (chat) {
+            // Add the new message to the existing chat
+            chat.messages.push(initialMessage);
+            await chat.save();
+        } else {
+            // Create a new chat
+            chat = await Chat.create({
+                participants: [userId, seller._id], // Buyer and seller
+                messages: [initialMessage],
+            });
+        }
+
+        // Respond with the created offer and chat details
+        return ResponseHandler.success(
+            res,
+            { offer, chat },
+            201,
+            'Offer created and chat updated/created successfully'
+        );
+    } catch (error) {
+        console.error(error);
+        ErrorHandler.handleError(error, res);
+    }
+};
+
 // Helper function to create or update a chat
 const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
     const initialMessage = {
@@ -336,6 +420,66 @@ const updateOffer = async (req, res) => {
     }
 };
 
+
+const updateOfferForBundle = async (req, res) => {
+    try {
+        const { offerId } = req.params; // Product and Offer IDs from URL
+        const { action, counter_price, counter_description, messageKey } = req.body; // Request body data
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decodedToken.userId; // Assuming user ID is available from authentication middleware
+
+        // Validate action
+        if (!['accept', 'counter', 'decline'].includes(action)) {
+            throw new CustomError(400, 'Invalid action. Must be "accept", "counter", or "decline".');
+        }
+
+        // Fetch the offer and populate product details
+        const offer = await Offer.findById(offerId).populate('bundle');
+        if (!offer) {
+            throw new CustomError(404, 'Offer not found.');
+        }
+        console.log(offer, "ODDER")
+
+        const sellerId = offer.bundle.createdBy; // Assuming `owner` is the seller's user ID
+
+        // Update offer based on action
+        if (action === 'accept') {
+            offer.status = 'accepted';
+        } else if (action === 'decline') {
+            offer.status = 'declined';
+        } else if (action === 'counter') {
+            if (!counter_price || counter_price <= 0) {
+                throw new CustomError(400, 'Counter price must be a valid positive number.');
+            }
+            offer.price = counter_price;
+            offer.description = counter_description;
+            offer.status = 'counter';
+        }
+
+        await offer.save(); // Save the updated offer
+
+        // Generate and save chat message
+        const messageContent = {
+            isBundle: true,
+            offer_id: offer?._id,
+            offer_price: offer.price,
+            seller_id: offer.bundle.createdBy,
+            bundle_actual_price: offer.bundle.totalAmount,
+            status: offer.status,
+            offer_description: offer.description,
+        };
+
+        await createOrUpdateChat(userId, sellerId, messageContent, messageKey);
+
+        // Return success response
+        return ResponseHandler.success(res, offer, 200, `Offer ${action}ed successfully.`);
+    } catch (error) {
+        console.error(error);
+        ErrorHandler.handleError(error, res);
+    }
+};
+
 module.exports = {
-    createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer
+    createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle
 };

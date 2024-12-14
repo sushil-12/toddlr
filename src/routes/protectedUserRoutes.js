@@ -8,7 +8,7 @@ const { createEditCategory, getAllCategories, getCategoryById } = require('../co
 const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCustomField } = require('../controllers/protected/CustomFieldTemplateController');
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
-const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer } = require('../controllers/protected/ProductController');
+const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle } = require('../controllers/protected/ProductController');
 const { getBraintreeClientToken, createTransactionBraintree } = require('../controllers/protected/PaymentController');
 const { createBundle } = require('../controllers/protected/CartController')
 const router = express.Router();
@@ -45,6 +45,11 @@ router.get('/get-product-details/:id', getProductDetails);
 
 router.post('/product/:productId/make-offer', makeAnOffer);
 router.put('/product/update-offer/:offerId', updateOffer);
+
+router.post('/bundle/:bundleId/make-offer', makeAnOfferForBundle);
+router.put('/bundle/update-offer/:offerId', updateOfferForBundle);
+
+
 
 router.get('/get-all-post/:post_type', getAllPosts);
 

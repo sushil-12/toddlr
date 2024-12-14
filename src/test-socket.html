@@ -4,231 +4,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API Documentation</title>
-  <!-- Swagger UI CSS CDN -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.19.3/swagger-ui.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.min.css"
-    integrity="sha512-xRGj65XGEcpPTE7Cn6ujJWokpXVLxqLxdtNZ/n1w52+76XaCRO7UWKZl9yJHvzpk99A0EP6EW+opPcRwPDxwkA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <title>Gnosis Event Calendar</title>
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 40px auto;
+      gap: 20px;
+    }
+
+    #event-details {
+      flex: 1;
+      border: 1px solid #ccc;
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 600px;
+    }
+
+    #calendar {
+      flex: 2;
+      border: 1px solid #ccc;
+      padding: 20px;
+    }
+
+    .event-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .event-item h3 {
+      margin: 0 0 10px;
+    }
+
+    .event-item p {
+      margin: 5px 0;
+    }
+
+    .fc-day-number {
+      position: relative;
+    }
+
+    .fc-day-number:after {
+      content: '•';
+      /* Small bullet for days with events */
+      color: red;
+      position: absolute;
+      top: 0;
+      right: 0;
+      transform: translate(50%, -50%);
+      font-size: 1.2em;
+      display: none;
+    }
+
+    .fc-day-with-event .fc-day-number:after {
+      display: inline;
+      background-color: black;
+      color: white;
+    }
+    .fc-day-with-event{
+      background-color: black;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="swagger-ui"></div>
+  <h1>Gnosis Event Calendar</h1>
+  <div class="container">
+    <div id="event-details">
+      <h2>Event Details</h2>
+      <p>Select a date or an event from the calendar to see details here.</p>
+    </div>
+    <div id="calendar"></div>
+  </div>
 
-  <!-- Swagger UI JS CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.19.3/swagger-ui-bundle.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.19.3/swagger-ui-standalone-preset.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.0/swagger-ui-bundle.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.0/swagger-ui-standalone-preset.js"></script>
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
   <script>
-    const swaggerJson = {
-      "openapi": "3.0.0",
-      "info": {
-        "title": "Chat API",
-        "description": "API for managing chat functionality",
-        "version": "1.0.0"
-      },
-      "paths": {
-        "/api/common/chats": {
-          "post": {
-            "summary": "Create a new chat",
-            "operationId": "createChat",
-            "requestBody": {
-              "description": "Participants to create a chat",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "participants": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "format": "uuid"
-                        }
-                      }
-                    },
-                    "required": ["participants"]
-                  },
-                  "example": {
-                    "participants": [
-                      "672c7fa7f51a18e04a3f69cd",
-                      "672c72edb749d926443b351e"
-                    ]
-                  }
-                }
-              },
-              "responses": {
-                "200": {
-                  "description": "Chat created successfully"
-                }
-              }
-            }
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const eventDetailsEl = document.getElementById('event-details');
+
+      // Fetch events from Gnosis API
+      fetch('https://gcl.gnosishosting.net/Connect4/Handlers/EventListHandler.ashx') // Replace with your API endpoint
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
           }
-        },
-        "/api/common/chats/{chatId}/messages": {
-          "post": {
-            "summary": "Send a message to the chat",
-            "operationId": "sendMessage",
-            "parameters": [
-              {
-                "name": "chatId",
-                "in": "path",
-                "required": true,
-                "description": "ID of the chat",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            ],
-            "requestBody": {
-              "description": "Message content",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "sender": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "content": {
-                        "type": "string"
-                      }
-                    },
-                    "required": ["sender", "content"]
-                  },
-                  "example": {
-                    "sender": "672c7fa7f51a18e04a3f69cd",
-                    "content": "Thanks!"
-                  }
-                }
-              },
-              "responses": {
-                "200": {
-                  "description": "Message sent successfully"
-                }
+          return response.json();
+        })
+        .then(data => {
+          if (!data || !data.length) {
+            console.error('No events found in API response');
+            return;
+          }
+
+          // Map events to FullCalendar format
+          const events = data.map(event => ({
+            title: event.EventName || 'Untitled Event',
+            start: event.EventDate, // Ensure the date is in ISO format
+            end: event.EventEndDate || null, // Optional: Include end date if available
+            description: event.EventDescription || 'No description available',
+            url: event.EventPageURL || null // Optional: Link to event page
+          }));
+
+          // Add custom class to days with events
+          const datesWithEvents = [...new Set(events.map(event => event.start.split('T')[0]))];
+          console.log(datesWithEvents, "DATE WUTH events")
+
+          // Initialize FullCalendar
+          const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            // headerToolbar: {
+            //   left: 'prev,next today',
+            //   center: 'title',
+            //   right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            // },
+            // events: events, // Load events dynamically
+            dayCellDidMount: function (cellInfo) {
+              // Highlight dates with events
+              console.log(cellInfo, cellInfo.date.toISOString(), datesWithEvents.includes(cellInfo.date.toISOString().split('T')[0]))
+              if (datesWithEvents.includes(cellInfo.date.toISOString().split('T')[0])) {
+                cellInfo.el.classList.add('fc-day-with-event'); // Add the custom class
               }
             },
-            "get": {
-              "summary": "Get messages in a chat",
-              "operationId": "getMessages",
-              "parameters": [
-                {
-                  "name": "chatId",
-                  "in": "path",
-                  "required": true,
-                  "description": "ID of the chat",
-                  "schema": {
-                    "type": "string"
-                  }
-                }
-              ],
-              "responses": {
-                "200": {
-                  "description": "List of messages in the chat",
-                  "content": {
-                    "application/json": {
-                      "schema": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "sender": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "content": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "/api/common/users/{userId}/chats": {
-          "get": {
-            "summary": "Get all chats for a user",
-            "operationId": "getUserChats",
-            "parameters": [
-              {
-                "name": "userId",
-                "in": "path",
-                "required": true,
-                "description": "ID of the user",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            ],
-            "responses": {
-              "200": {
-                "description": "List of chats for the user",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "chatId": {
-                            "type": "string"
-                          },
-                          "participants": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "/api/common/chats/{chatId}": {
-          "delete": {
-            "summary": "Delete a chat",
-            "operationId": "deleteChat",
-            "parameters": [
-              {
-                "name": "chatId",
-                "in": "path",
-                "required": true,
-                "description": "ID of the chat to delete",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            ],
-            "responses": {
-              "200": {
-                "description": "Chat deleted successfully"
-              }
-            }
-          }
-        }
-      }
-    }
+            dateClick: function (info) {
+              // Display events for the selected date
+              const selectedDate = info.dateStr;
+              const eventsForDate = events.filter(event => event.start.startsWith(selectedDate));
 
-    const ui = SwaggerUIBundle({
-      spec: swaggerJson, // Specify the path to your swagger.json file
-      dom_id: '#swagger-ui',
-      deepLinking: true,
-      presets: [
-        SwaggerUIBundle.presets.apis,
-        SwaggerUIBundle.presets.sdk
-      ],
-      layout: "BaseLayout",
+              if (eventsForDate.length) {
+                eventDetailsEl.innerHTML = `
+                                    <h2>Events on ${selectedDate}</h2>
+                                    ${eventsForDate.map(event => `
+                                        <div class="event-item">
+                                            <h3>${event.title}</h3>
+                                            <p><strong>Description:</strong> ${event.description}</p>
+                                            ${event.url ? `<p><a href="${event.url}" target="_blank">More Info</a></p>` : ''}
+                                        </div>
+                                    `).join('')}
+                                `;
+              } else {
+                eventDetailsEl.innerHTML = `<h2>No events on ${selectedDate}</h2>`;
+              }
+            }
+          });
+
+          calendar.render();
+        })
+        .catch(error => {
+          console.error('Error fetching Gnosis Calendar data:', error);
+        });
     });
   </script>
 </body>
