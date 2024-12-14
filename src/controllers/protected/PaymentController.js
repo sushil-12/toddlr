@@ -36,17 +36,13 @@ const createTransactionBraintree = async (req, res) => {
         const token = req.headers.authorization.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const createdBy = decodedToken.userId;
-        const { amount, paymentMethodNonce, offerId, productId, bundleId } = req.body
-
+        const { amount, paymentMethodNonce, offerId, productId, bundleId } = req.body;
+        
         if (!amount || !paymentMethodNonce) {
-            return ResponseHandler.error(res, 400, "Amount and Nonce token are required")
+            return ResponseHandler.error(res, 400, "Amount and Nonce token are required");
         }
-        if (!offerId || !productId || !bundleId) {
-            return ResponseHandler.error(res, 400, "Offer Id or Product Id or Bundle Id is required.")
-        }
-       
 
-        // use nonce received from client, currently using statis nonce
+        // use nonce received from client, currently using static nonce
         gateway.transaction.sale({
             amount: amount,
             paymentMethodNonce: "fake-valid-nonce", // use payment method nonce
@@ -55,30 +51,40 @@ const createTransactionBraintree = async (req, res) => {
             }
         }, async (err, result) => {
             if (err) {
-                ErrorHandler.handleError(err)
+                ErrorHandler.handleError(err);
+                return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
             }
+
             if (result && result.success) {
-                console.log("Result Received===>", result);
-                const paymentDetails = new Payment(
+                console.log("Result Received===>", result, result?.transaction?.id );
+                const paymentStatus = result?.success ? 'success' : 'failed';
+
+                const paymentDetails = new Payment({
                     createdBy,
                     productId,
                     offerId,
                     bundleId,
                     amount,
-                    result?.transaction?.id,
-                    result?.status,
-                    new Date()
-                )
-                const savedPayment = await paymentDetails.save()
-                return ResponseHandler.success(res, savedPayment, 200, "Payment Successful!")
+                    transactionId: result?.transaction?.id,
+                    paymentStatus: paymentStatus,
+                    date: new Date()
+                });
+
+                try {
+                    const savedPayment = await paymentDetails.save();
+                    return ResponseHandler.success(res, savedPayment, 200, "Payment Successful!");
+                } catch (error) {
+                    console.log(error)
+                    return ResponseHandler.error(res, 500, "Error saving payment details!");
+                }
             } else {
-                return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!")
+                return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
             }
-        })
+        });
     } catch (error) {
-        return ResponseHandler.error(res, error, 500, "Payment Unsuccessful !!!")
+        return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
     }
-}
+};
 
 module.exports = {
     getBraintreeClientToken,
