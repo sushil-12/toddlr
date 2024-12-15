@@ -56,7 +56,6 @@ const createTransactionBraintree = async (req, res) => {
             }
 
             if (result && result.success) {
-                console.log("Result Received===>", result, result?.transaction?.id );
                 const paymentStatus = result?.success ? 'success' : 'failed';
 
                 const paymentDetails = new Payment({

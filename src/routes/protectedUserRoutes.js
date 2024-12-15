@@ -10,7 +10,7 @@ const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, de
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle } = require('../controllers/protected/ProductController');
 const { getBraintreeClientToken, createTransactionBraintree } = require('../controllers/protected/PaymentController');
-const { createBundle } = require('../controllers/protected/CartController')
+const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController')
 const router = express.Router();
 
 // Apply the token verification middleware to all routes in this router
@@ -86,6 +86,11 @@ router.get('/list-files', listFiles);
 
 router.post('/create-transaction', createTransactionBraintree);
 
-router.post('/cart/create-bundle', createBundle)
+router.post('/cart/create-bundle', createBundle);
+router.get('/list-bundle', listBundles);
+router.get('/get-bundle/:id', getBundleById);
+
+
+
 
 module.exports = router;

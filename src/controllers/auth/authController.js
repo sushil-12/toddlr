@@ -18,6 +18,7 @@ const { default: mongoose } = require('mongoose');
 const admin = require('firebase-admin');
 const { initializeApp } = require('firebase-admin/app');
 const axios = require('axios');
+const Bundle = require('../../models/Bundle');
 
 const app = express();
 app.use(useragent.express());
@@ -216,6 +217,14 @@ const socialLogin = async (req, res) => {
         const isProfileCompleted = !!existingUser.password;
         const isUpdateRequired = !!existingUser.phoneNumber;
 
+        const bundle = await Bundle.findOne({
+          createdBy: existingUser._id,
+          status: { $ne: 'executed' }
+        });
+    
+        const bundleId = bundle._id;
+        const cartCount = bundle.products.length;
+
         const userProfile = {
           _id: existingUser._id,
           username: existingUser.username,
@@ -230,7 +239,7 @@ const socialLogin = async (req, res) => {
           isOnBoardingComplete: existingUser?.isOnBoardingComplete,
           firstTimeToddlerAddCompleted: existingUser?.firstTimeToddlerAddCompleted,
           temp_email: existingUser?.temp_email,
-          followers: existingUser?.followers
+          followers: existingUser?.followers,bundleId, cartCount
 
         };
 
@@ -256,8 +265,16 @@ const socialLogin = async (req, res) => {
         $or: socialLoginConditions
       });
     }
-    
+
     if (existingSocialLoginId) {
+
+      const bundle = await Bundle.findOne({
+        createdBy: existingSocialLoginId._id,
+        status: { $ne: 'executed' }
+      });
+  
+      const bundleId = bundle._id;
+      const cartCount = bundle.products.length;
       const userProfile = {
         _id: existingSocialLoginId._id,
         username: existingSocialLoginId.username,
@@ -272,8 +289,9 @@ const socialLogin = async (req, res) => {
         isOnBoardingComplete: existingSocialLoginId?.isOnBoardingComplete,
         firstTimeToddlerAddCompleted: existingSocialLoginId?.firstTimeToddlerAddCompleted,
         temp_email: existingSocialLoginId?.temp_email,
+        bundleId, cartCount,
         followers: existingSocialLoginId?.followers
-  
+
       };
       // If a user with any of the social login IDs exists, issue a JWT token
       const token = jwt.sign({ userId: existingSocialLoginId._id }, process.env.JWT_SECRET, {
@@ -322,6 +340,14 @@ const socialLogin = async (req, res) => {
       const isProfileCompleted = !!user.password;
       const isUpdateRequired = !!user.phoneNumber;
 
+      const bundle = await Bundle.findOne({
+        createdBy: user._id,
+        status: { $ne: 'executed' }
+      });
+  
+      const bundleId = bundle._id;
+      const cartCount = bundle.products.length;
+
       const userProfile = {
         _id: user._id,
         username: user.username,
@@ -336,6 +362,7 @@ const socialLogin = async (req, res) => {
         isOnBoardingComplete: user?.isOnBoardingComplete,
         firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
         temp_email: user?.temp_email,
+        bundleId, cartCount,
         followers: user?.followers
 
       };
@@ -369,6 +396,13 @@ const socialLogin = async (req, res) => {
       });
 
       await user.save();
+      const bundle = await Bundle.findOne({
+        createdBy: user._id,
+        status: { $ne: 'executed' }
+      });
+  
+      const bundleId = bundle._id;
+      const cartCount = bundle.products.length;
 
       const userProfile = {
         _id: user._id,
@@ -384,7 +418,8 @@ const socialLogin = async (req, res) => {
         isOnBoardingComplete: user?.isOnBoardingComplete,
         firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
         temp_email: user?.temp_email,
-        followers: user?.followers
+        followers: user?.followers,
+        bundleId, cartCount
 
       };
 
@@ -549,6 +584,14 @@ const login = async (req, res) => {
     const firstTimeToddlerAddCompleted = userData?.firstTimeToddlerAddCompleted ? userData?.firstTimeToddlerAddCompleted : false;
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: token_expiry });
 
+    const bundle = await Bundle.findOne({
+      createdBy: user._id,
+      status: { $ne: 'executed' }
+    });
+
+    const bundleId = bundle._id;
+    const cartCount = bundle.products.length;
+    
     const userProfile = {
       _id: userData._id,
       username: userData.username,
@@ -563,10 +606,12 @@ const login = async (req, res) => {
       isOnBoardingComplete: userData?.isOnBoardingComplete,
       firstTimeToddlerAddCompleted: userData?.firstTimeToddlerAddCompleted,
       temp_email: userData?.temp_email,
+      bundleId,
+      cartCount,
       followers: userData?.followers
 
     };
-    ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message:"Welocme Back!" }, HTTP_STATUS_CODES.OK);
+    ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message: "Welocme Back!" }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }

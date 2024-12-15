@@ -4,7 +4,7 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 const cartProductsSchema = new mongoose.Schema({
     productId:{
         type: mongoose.Schema.Types.ObjectId,
-        ref:'Product',
+        ref: 'Product',
         required:true
     },
     price: {
@@ -24,9 +24,15 @@ const bundleSchema = new mongoose.Schema({
         required: true,
     },
     products:[cartProductsSchema],
+    
     totalAmount: {
         type: Number,
         reuqired:true
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'executed'], // Predefined values
+        default: 'pending', // Default status
     },
     createdAt: {
         type: Date,
