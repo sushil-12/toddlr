@@ -17,7 +17,9 @@ const getBraintreeClientToken = async (req, res) => {
     try {
         // const token = req.headers.authorization.split(' ')[1];
         gateway.clientToken
-            .generate({})
+            .generate({
+                merchantAccountId:"k9jth2hkd4tdwp88"
+            })
             .then(response => {
                 return ResponseHandler.success(res, { client_token: response.clientToken }, 200, "Token Generated Successfully")
             })
