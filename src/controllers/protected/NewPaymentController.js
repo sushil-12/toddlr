@@ -7,38 +7,48 @@ const Payment = require("../../models/Payment");
 const { createMollieClient } = require('@mollie/api-client');
 
 
-const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
+const mollieClient = createMollieClient({ apiKey: `${process.env.MOLLIE_API_KEY}` });
 
 
 const createMolliePayment = async (req,res) => {
     try {
+        console.log("I AM HERE===>")
         const token = req.headers.authorization.split(' ')[1];
+        console.log("I AM HERE===>2")
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const createdBy = decodedToken.userId;
+        console.log("I AM HERE===>3")
         const { amount, offerId, productId, bundleId } = req.body;
         
         if (!amount) {
             return ResponseHandler.error(res, 400, "Amount is required");
         }
-
-        const payment = await mollieClient.payments.create({
-            amount: {
-              value: amount,
-              currency: 'USD'
-            },
-            description: 'My first API payment',
-            redirectUrl: 'https://webhook.site/03e7bc85-98b5-4e98-a3a9-2f6ba488516a',
-            webhookUrl:  'https://webhook.site/03e7bc85-98b5-4e98-a3a9-2f6ba488516a'
-          });
+        console.log("I AM HERE===>4",amount)
+        try {
+            const payment = await mollieClient.payments.create({
+                amount: {
+                  value: amount,
+                  currency: 'USD'
+                },
+                description: 'My first API payment',
+                redirectUrl: 'https://toddlr.page.link/Ymry/',
+                webhookUrl:  'https://webhook.site/03e7bc85-98b5-4e98-a3a9-2f6ba488516a'
+              });
+    
+              console.log("PAYMENT===>", payment,payment.getCheckoutUrl())
+              
+            // Forward the customer to payment.getCheckoutUrl().
+              const paymentCheckoutUrl = payment.getCheckoutUrl()
+    
+              if(paymentCheckoutUrl){
+                return ResponseHandler.success(res, paymentCheckoutUrl, 200, "Payment Initiated!");
+              }    
+        } catch (error) {
+            console.log("ERROR===>",error)
+            return ResponseHandler.error(res, 500, "Payment Error !!!");
+        }
+        
           
-        // Forward the customer to payment.getCheckoutUrl().
-          const paymentCheckoutUrl = payment.getCheckoutUrl()
-
-          if(paymentCheckoutUrl){
-            return ResponseHandler.success(res, paymentCheckoutUrl, 200, "Payment Initiated!");
-          }
-          
-        // use nonce received from client, currently using static nonce
         // gateway.transaction.sale({
         //     amount: amount,
         //     paymentMethodNonce: "fake-valid-nonce", // use payment method nonce
@@ -83,32 +93,6 @@ const createMolliePayment = async (req,res) => {
 }
 
 
-const sendHtmlFile = async (req,res) => {}
-
-const gateway = new braintree.BraintreeGateway({
-    environment: braintree.Environment.Sandbox,
-    merchantId: process.env.BRAINTREE_MERCHANT_ID,
-    publicKey: process.env.BRAINTREE_PUBLIC_KEY,
-    privateKey: process.env.BRAINTREE_PRIVATE_KEY
-});
-// Client token used on client side to communicate with braintree
-const getBraintreeClientToken = async (req, res) => {
-
-    try {
-        // const token = req.headers.authorization.split(' ')[1];
-        gateway.clientToken
-            .generate({
-                merchantAccountId:"k9jth2hkd4tdwp88"
-            })
-            .then(response => {
-                return ResponseHandler.success(res, { client_token: response.clientToken }, 200, "Token Generated Successfully")
-            })
-    }
-    catch (error) {
-        console.log("Error", error)
-        ErrorHandler.handleError(error, res)
-    }
-}
 
 /* 
 *  Create transaction api on braintree
@@ -168,6 +152,6 @@ const createTransactionBraintree = async (req, res) => {
 };
 
 module.exports = {
-    getBraintreeClientToken,
-    createTransactionBraintree
+    createTransactionBraintree,
+    createMolliePayment
 };
