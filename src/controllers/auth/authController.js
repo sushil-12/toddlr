@@ -222,8 +222,8 @@ const socialLogin = async (req, res) => {
           status: { $ne: 'executed' }
         });
     
-        const bundleId = bundle._id;
-        const cartCount = bundle.products.length;
+        const bundleId = bundle?._id;
+        const cartCount = bundle?.products.length;
 
         const userProfile = {
           _id: existingUser._id,
@@ -273,8 +273,8 @@ const socialLogin = async (req, res) => {
         status: { $ne: 'executed' }
       });
   
-      const bundleId = bundle._id;
-      const cartCount = bundle.products.length;
+      const bundleId = bundle?._id;
+      const cartCount = bundle?.products.length;
       const userProfile = {
         _id: existingSocialLoginId._id,
         username: existingSocialLoginId.username,
@@ -345,8 +345,8 @@ const socialLogin = async (req, res) => {
         status: { $ne: 'executed' }
       });
   
-      const bundleId = bundle._id;
-      const cartCount = bundle.products.length;
+      const bundleId = bundle?._id;
+      const cartCount = bundle?.products.length;
 
       const userProfile = {
         _id: user._id,
@@ -401,8 +401,8 @@ const socialLogin = async (req, res) => {
         status: { $ne: 'executed' }
       });
   
-      const bundleId = bundle._id;
-      const cartCount = bundle.products.length;
+      const bundleId = bundle?._id;
+      const cartCount = bundle?.products.length;
 
       const userProfile = {
         _id: user._id,
@@ -589,8 +589,8 @@ const login = async (req, res) => {
       status: { $ne: 'executed' }
     });
 
-    const bundleId = bundle._id;
-    const cartCount = bundle.products.length;
+    const bundleId = bundle?._id;
+    const cartCount = bundle?.products.length;
     
     const userProfile = {
       _id: userData._id,
