@@ -12,18 +12,14 @@ const mollieClient = createMollieClient({ apiKey: `${process.env.MOLLIE_API_KEY}
 
 const createMolliePayment = async (req,res) => {
     try {
-        console.log("I AM HERE===>")
         const token = req.headers.authorization.split(' ')[1];
-        console.log("I AM HERE===>2")
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const createdBy = decodedToken.userId;
-        console.log("I AM HERE===>3")
-        const { amount, offerId, productId, bundleId } = req.body;
+        const { amount, offerId, productId, bundleId, description } = req.body;
         
         if (!amount) {
             return ResponseHandler.error(res, 400, "Amount is required");
         }
-        console.log("I AM HERE===>4",amount)
         try {
             const payment = await mollieClient.payments.create({
                 amount: {
@@ -31,12 +27,10 @@ const createMolliePayment = async (req,res) => {
                   currency: 'USD'
                 },
                 description: 'My first API payment',
-                redirectUrl: 'https://toddlr.page.link/Ymry/',
-                webhookUrl:  'https://webhook.site/03e7bc85-98b5-4e98-a3a9-2f6ba488516a'
+                redirectUrl: 'https://toddlr.page.link/Ymry?screen=payment-success',
+                webhookUrl:  'https://toddlrapi.vercel.app/payment-webhook'
               });
-    
-              console.log("PAYMENT===>", payment,payment.getCheckoutUrl())
-              
+                  
             // Forward the customer to payment.getCheckoutUrl().
               const paymentCheckoutUrl = payment.getCheckoutUrl()
     
@@ -44,7 +38,6 @@ const createMolliePayment = async (req,res) => {
                 return ResponseHandler.success(res, paymentCheckoutUrl, 200, "Payment Initiated!");
               }    
         } catch (error) {
-            console.log("ERROR===>",error)
             return ResponseHandler.error(res, 500, "Payment Error !!!");
         }
         
