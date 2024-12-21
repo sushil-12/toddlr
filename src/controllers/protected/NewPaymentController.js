@@ -1,8 +1,7 @@
 const { ResponseHandler, ErrorHandler, CustomError } = require("../../utils/responseHandler");
 const jwt = require('jsonwebtoken');
-const braintree = require("braintree");
-const Offer = require("../../models/Offer");
-const Product = require("../../models/Product");
+
+
 const Payment = require("../../models/Payment");
 const { createMollieClient } = require('@mollie/api-client');
 
@@ -28,7 +27,7 @@ const createMolliePayment = async (req,res) => {
                 },
                 description: 'My first API payment',
                 redirectUrl: 'https://toddlr.page.link/Ymry?screen=payment-success',
-                webhookUrl:  'https://toddlrapi.vercel.app/payment-webhook'
+                webhookUrl:  'https://toddlr.onrender.com/payment-webhook'
               });
                   
             // Forward the customer to payment.getCheckoutUrl().
