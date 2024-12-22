@@ -34,7 +34,7 @@ const createMolliePayment = async (req,res) => {
                 productId,
                 offerId,
                 bundleId,
-                amount,
+                totalAmount:amount,
                 transactionId: payment.id,
                 paymentStatus: payment.status,
                 date: new Date()
