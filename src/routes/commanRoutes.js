@@ -7,7 +7,6 @@ const checkFormTypeMiddleware = require('../middleware/checkFormTypeMiddleware')
 const { uploadMediaToLibrary } = require('../controllers/common/FileUploader');
 const Chat = require('../models/Chat');
 const { default: mongoose } = require('mongoose');
-const { getBraintreeClientToken } = require('../controllers/protected/PaymentController');
 const { handleWebhook } = require('../controllers/protected/WebhookController');
 
 router.get('/get-all-domains', getAllDomain);
@@ -35,8 +34,6 @@ router.get('/chats/:chatId/messages', getMessages);
 router.get('/users/:userId/chats', getUserChats);
 
 router.delete('/chats/:chatId', deleteChat);
-
-router.get('/get-client-token', getBraintreeClientToken);
 
 router.post('/payment-webhook',handleWebhook)
 

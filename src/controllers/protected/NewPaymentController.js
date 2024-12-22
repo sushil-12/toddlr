@@ -27,123 +27,57 @@ const createMolliePayment = async (req,res) => {
                 },
                 description: 'My first API payment',
                 redirectUrl: 'https://toddlr.page.link/Ymry?screen=payment-success',
-                webhookUrl:  'https://toddlr.onrender.com/payment-webhook'
+                webhookUrl:  'https://toddlr.onrender.com/api/common/payment-webhook'
               });
-                  
+              const paymentDetails = new Payment({
+                createdBy,
+                productId,
+                offerId,
+                bundleId,
+                amount,
+                transactionId: payment.id,
+                paymentStatus: payment.status,
+                date: new Date()
+            });  
+            const savedPayment = await paymentDetails.save()
             // Forward the customer to payment.getCheckoutUrl().
-              const paymentCheckoutUrl = payment.getCheckoutUrl()
+            const paymentCheckoutUrl = payment.getCheckoutUrl()
+            const transactionId = savedPayment.transactionId
     
               if(paymentCheckoutUrl){
-                return ResponseHandler.success(res, paymentCheckoutUrl, 200, "Payment Initiated!");
+                const paymentDetails = {
+                    paymentCheckoutUrl,
+                    transactionId
+                }
+                return ResponseHandler.success(res, paymentDetails, 200, "Payment Initiated!");
               }    
         } catch (error) {
             return ResponseHandler.error(res, 500, "Payment Error !!!");
         }
-        
-          
-        // gateway.transaction.sale({
-        //     amount: amount,
-        //     paymentMethodNonce: "fake-valid-nonce", // use payment method nonce
-        //     options: {
-        //         submitForSettlement: true
-        //     }
-        // }, async (err, result) => {
-        //     if (err) {
-        //         ErrorHandler.handleError(err);
-        //         return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
-        //     }
-
-        //     if (result && result.success) {
-        //         const paymentStatus = result?.success ? 'success' : 'failed';
-
-        //         const paymentDetails = new Payment({
-        //             createdBy,
-        //             productId,
-        //             offerId,
-        //             bundleId,
-        //             amount,
-        //             transactionId: result?.transaction?.id,
-        //             paymentStatus: paymentStatus,
-        //             date: new Date()
-        //         });
-
-        //         try {
-        //             const savedPayment = await paymentDetails.save();
-        //             return ResponseHandler.success(res, savedPayment, 200, "Payment Successful!");
-        //         } catch (error) {
-        //             console.log(error)
-        //             return ResponseHandler.error(res, 500, "Error saving payment details!");
-        //         }
-        //     } else {
-        //         return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
-        //     }
-        // });
+ 
     } catch (error) {
         return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
     }
 
 }
 
+const getPaymentStatus = async (req,res) => {
+    const {transactionId}   = req.query;
 
-
-/* 
-*  Create transaction api on braintree
-*/
-const createTransactionBraintree = async (req, res) => {
-    try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        const createdBy = decodedToken.userId;
-        const { amount, paymentMethodNonce, offerId, productId, bundleId } = req.body;
-        
-        if (!amount || !paymentMethodNonce) {
-            return ResponseHandler.error(res, 400, "Amount and Nonce token are required");
+    try{
+        const payment = await Payment.findOne({transactionId})
+        if(!payment){
+            return ResponseHandler.error(res, 404,"Payment Not Found." )
         }
 
-        // use nonce received from client, currently using static nonce
-        gateway.transaction.sale({
-            amount: amount,
-            paymentMethodNonce: "fake-valid-nonce", // use payment method nonce
-            options: {
-                submitForSettlement: true
-            }
-        }, async (err, result) => {
-            if (err) {
-                ErrorHandler.handleError(err);
-                return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
-            }
-
-            if (result && result.success) {
-                const paymentStatus = result?.success ? 'success' : 'failed';
-
-                const paymentDetails = new Payment({
-                    createdBy,
-                    productId,
-                    offerId,
-                    bundleId,
-                    amount,
-                    transactionId: result?.transaction?.id,
-                    paymentStatus: paymentStatus,
-                    date: new Date()
-                });
-
-                try {
-                    const savedPayment = await paymentDetails.save();
-                    return ResponseHandler.success(res, savedPayment, 200, "Payment Successful!");
-                } catch (error) {
-                    console.log(error)
-                    return ResponseHandler.error(res, 500, "Error saving payment details!");
-                }
-            } else {
-                return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
-            }
-        });
-    } catch (error) {
-        return ResponseHandler.error(res, 500, "Payment Unsuccessful !!!");
+        return ResponseHandler.success(res, 200, payment, "Payment details fetched successfully");
+    }catch(error){
+        return ResponseHandler.error(res, 500, "Unable to fetch details")
     }
-};
+
+}
 
 module.exports = {
-    createTransactionBraintree,
-    createMolliePayment
+    createMolliePayment,
+    getPaymentStatus
 };

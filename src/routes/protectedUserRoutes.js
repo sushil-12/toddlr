@@ -9,9 +9,8 @@ const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCust
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle } = require('../controllers/protected/ProductController');
-const { getBraintreeClientToken, createTransactionBraintree } = require('../controllers/protected/PaymentController');
 const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController');
-const { createMolliePayment } = require('../controllers/protected/NewPaymentController');
+const { createMolliePayment, getPaymentStatus } = require('../controllers/protected/NewPaymentController');
 const router = express.Router();
 
 // Apply the token verification middleware to all routes in this router
@@ -86,6 +85,7 @@ router.delete('/delete/website/:website_id', deleteWebsite);
 router.get('/list-files', listFiles);
 
 router.post('/create-transaction', createMolliePayment);
+router.get('/get-payment-status', getPaymentStatus);
 
 router.post('/cart/create-bundle', createBundle);
 router.get('/list-bundle', listBundles);
