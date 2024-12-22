@@ -14,6 +14,8 @@ const handleWebhook = async(req,res) => {
             {transactionId: paymentId},
             {paymentStatus: payment.status}
         )
+        return ResponseHandler.success(res,null,200)
+
     }catch(error){
         return ResponseHandler.error(res,500, "Error in updating payment record")
     }
