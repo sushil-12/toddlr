@@ -70,7 +70,7 @@ const getPaymentStatus = async (req,res) => {
             return ResponseHandler.error(res, 404,"Payment Not Found." )
         }
 
-        return ResponseHandler.success(res, 200, payment, "Payment details fetched successfully");
+        return ResponseHandler.success(res, payment,200, "Payment details fetched successfully");
     }catch(error){
         return ResponseHandler.error(res, 500, "Unable to fetch details")
     }
