@@ -12,7 +12,8 @@ const handleWebhook = async(req,res) => {
         const payment = await mollieClient.payments.get(paymentId);
         await Payment.findOneAndUpdate(
             {transactionId: paymentId},
-            {paymentStatus: payment.status}
+            {paymentStatus: payment.status},
+            { new: true }
         )
         return ResponseHandler.success(res,null,200)
 
