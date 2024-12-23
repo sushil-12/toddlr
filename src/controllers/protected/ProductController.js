@@ -480,6 +480,35 @@ const updateOfferForBundle = async (req, res) => {
     }
 };
 
+// This method is used for reserve an item functionality
+const updateProductStatus = async (req,res) => {
+    const {id} = req.params;
+    const {status} = req.body;
+
+    if(!status){
+        return ResponseHandler.error(res, 500, "Status is required")
+    }
+
+    try{
+        if(status === "reserved"){
+            const product = await Product.findOneAndUpdate(
+                id,
+                {status, reservedAt: new Date()},
+                {new: true }
+            );
+            // need to call cron job to update the document status after 2 hours    
+            if(!product){
+                return ResponseHandler.error(res, 404, "Product Not Found.")
+            }
+
+            return ResponseHandler.success(res, product, 200,"Product reserved successfully for two days.")
+        }
+    }catch(error){
+        return ResponseHandler.error(res, 500, "Internal server error")
+    }
+
+};
+
 module.exports = {
-    createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle
+    createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus
 };
