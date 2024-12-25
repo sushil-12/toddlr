@@ -104,9 +104,20 @@ const getProducts = async (req, res) => {
             page = 1,
             limit = 10,
         } = req.query;
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const createdBy = decodedToken.userId;
+        // Build filter criteria based on query parameters
+        const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // Current time minus 2 days.
 
         // Build filter criteria based on query parameters
-        const filter = {};
+        const filter = {
+            $or: [
+                { reservedAt: { $exists: false } }, // Products not reserved
+                { reservedAt: { $lte: twoDaysAgo } }, // Products reserved more than two days ago
+                { createdBy: createdBy }, // Products created by the user
+            ],
+        };
         if (category) filter.category = category;
         if (gender) filter.gender = gender;
         if (condition) filter.condition = condition;
@@ -482,7 +493,7 @@ const updateOfferForBundle = async (req, res) => {
 
 // This method is used for reserve an item functionality
 const updateProductStatus = async (req,res) => {
-    const {id} = req.params;
+    const productId = req.query.id;
     const {status} = req.body;
 
     if(!status){
@@ -491,12 +502,12 @@ const updateProductStatus = async (req,res) => {
 
     try{
         if(status === "reserved"){
-            const product = await Product.findOneAndUpdate(
-                id,
-                {status, reservedAt: new Date()},
+            console.log("PRODUCT ID====>", productId)
+            const product = await Product.findByIdAndUpdate(
+                productId,
+                {reservedAt: new Date()},
                 {new: true }
             );
-            // need to call cron job to update the document status after 2 hours    
             if(!product){
                 return ResponseHandler.error(res, 404, "Product Not Found.")
             }
