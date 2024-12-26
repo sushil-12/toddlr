@@ -56,7 +56,7 @@ app.use(passport.session());
 // app.use(limiter);
 
 // Serve static assets
-app.use(logRequestAndResponse);
+// app.use(logRequestAndResponse);
 app.get('/logs', getLogs);
 
 app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));

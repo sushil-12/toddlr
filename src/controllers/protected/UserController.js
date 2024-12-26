@@ -15,6 +15,8 @@ const Sidebar = require('../../models/Sidebar');
 const AuthValidator = require('../../validator/AuthValidator');
 const cloudinary = require('../../config/cloudinary');
 const Website = require('../../models/Websites');
+const Coach = require('../../models/Coach');
+const Chat = require('../../models/Chat');
 
 
 const defaultSidebarJson = {
@@ -128,6 +130,105 @@ const getProfile = async (req, res) => {
     ErrorHandler.handleError(error, res);
   }
 };
+
+const createChatWithCoach = async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decodedToken.userId;
+
+  try {
+    // Retrieve the logged-in user's data and check for an associated coach
+    const user = await User.findById(userId).populate('coach'); // Assuming the 'coach' field exists on the user model
+
+    if (!user) {
+      throw new CustomError(404, 'User not found');
+    }
+
+    let coachId = user.coach ? user.coach._id : null; // If a coach is assigned, get their ID
+
+    // If no coach assigned, create a new coach and associate with the user
+    if (!coachId) {
+      const newCoach = new Coach({
+        coachName: 'Coach_' + userId, // You can customize the coach name
+        userId: userId,
+        isActive: true,
+      });
+
+      const savedCoach = await newCoach.save();
+      coachId = savedCoach._id;
+
+      // Update the user document with the new coach ID
+      await User.findByIdAndUpdate(
+        userId,
+        { coach: coachId }, // Update the 'coach' field with the coachId
+        { new: true } // Return the updated document
+      ).populate('coach');
+    }
+
+    const participants = [userId, coachId]; // Set participants to user and coach
+    console.log("coachId ID", coachId);
+
+    if (participants.length !== 2) {
+      throw new CustomError(400, 'Exactly two participants are required');
+    }
+
+    // Check if chat already exists with these participants
+    let chat = await Chat.findOne({ participants: { $all: participants } }).populate('messages.sender', 'username email');
+
+    if (!chat) {
+      // If no chat exists, create a new chat with the participants
+      const initialMessage = {
+        sender: coachId,
+        content: "Hello, How may I help you?", // Initial message from the coach
+        timestamp: new Date(),
+      };
+
+      chat = await Chat.create({
+        participants,
+        messages: [initialMessage], // Include the initial message in the chat
+      });
+    }
+
+    // Manipulate the messages if necessary
+    const updatedMessages = await Promise.all(
+      chat.messages.map(async (message) => {
+        if (message.content && typeof message.content === 'object' && message.content.offer_id) {
+          try {
+            // Fetch the offer and populate it
+            const offer = await Offer.findById(message.content.offer_id).populate('product');
+            const messageContent = message.content;
+            // Update the message content with populated offer details
+            message.content = {
+              offer_id: offer?._id,
+              offer_price: messageContent.offer_price,
+              product_name: offer.product.title,
+              seller_id: offer.product.createdBy,
+              product_image: offer.product.images[0], // Assuming images is an array
+              product_actual_price: offer.product.price,
+              status: messageContent.status,
+              currentStatus: offer?.status,
+              action_done: messageContent?.action_done || false,
+              offer_description: messageContent.offer_description,
+            };
+          } catch (err) {
+            console.error('Error populating offer:', err);
+            message.content = {
+              ...message.content,
+              error: 'Failed to fetch offer details',
+            };
+          }
+        }
+        return message;
+      })
+    );
+
+    // Send the updated chat with manipulated messages
+    ResponseHandler.success(res, { ...chat.toObject(), messages: updatedMessages }, 201);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 const logout = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
@@ -653,5 +754,5 @@ const deleteUser = async (req, res) => {
 }
 
 module.exports = {
-  getProfile, getUsersProfile, getUserRepository, editUserProfile, checkPassword, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
+  getProfile, getUsersProfile, getUserRepository, editUserProfile, checkPassword,createChatWithCoach, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
 };

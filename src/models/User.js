@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
   bio: { type: String },
+  coach: { type: mongoose.Schema.Types.ObjectId, ref: 'Coach' },
   role: { 
     type: String, 
     enum: ['user', 'admin', 'superadmin'], // Define allowed roles

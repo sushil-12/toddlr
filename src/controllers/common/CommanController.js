@@ -85,6 +85,7 @@ const createChat = async (req, res) => {
   }
 };
 
+
 // Chat API - Send a message in a chat
 const sendMessage = async (req, res) => {
   const { chatId } = req.params;
