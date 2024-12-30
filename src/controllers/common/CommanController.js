@@ -146,7 +146,7 @@ const getMessages = async (req, res) => {
               offer_price: messageContent.offer_price,
               product_name: offer.product?.title,
               condition:offer.product?.condition,
-              seller_id: offer.product?.createdBy,
+              seller_id:  messageContent?.isBundle === true? messageContent.seller_id: offer.product?.createdBy,
               product_image: offer.product?.images[0], // Assuming images is an array
               product_actual_price: offer.product?.price,
               status: messageContent.status,
