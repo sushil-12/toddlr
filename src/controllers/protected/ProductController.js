@@ -90,6 +90,7 @@ const createAndUpdateProduct = async (req, res) => {
     }
 };
 
+
 const getProducts = async (req, res) => {
     try {
         // Extract query parameters for filtering, sorting, and pagination (if any)
