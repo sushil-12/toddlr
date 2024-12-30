@@ -305,7 +305,7 @@ const makeAnOfferForBundle = async (req, res) => {
                 offer_id: offer?._id,
                 offer_price,
                 product_name: '',
-                seller_id: product.createdBy,
+                seller_id: productsList[0].createdBy, // Assuming seller is same for all products in the bundle
                 // product_image: product.images[0], // Assuming `image` is a field in the product schema
                 bundle_actual_price: product.totalAmount,
                 status: offer?.status,
