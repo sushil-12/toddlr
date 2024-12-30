@@ -142,16 +142,17 @@ const getMessages = async (req, res) => {
             message.content = {
               offer_id: offer?._id,
               offer_price: messageContent.offer_price,
-              product_name: offer.product.title,
-              condition:offer.product.condition,
-              seller_id: offer.product.createdBy,
-              product_image: offer.product.images[0], // Assuming images is an array
-              product_actual_price: offer.product.price,
+              product_name: offer.product?.title,
+              condition:offer.product?.condition,
+              seller_id: offer.product?.createdBy,
+              product_image: offer.product?.images[0], // Assuming images is an array
+              product_actual_price: offer.product?.price,
               status: messageContent.status,
               currentStatus: offer?.status,
               action_done: messageContent?.action_done || false,
               offer_description: messageContent.offer_description,
             };
+            console.log("MESSAGE DETAILS===>", message)
           } catch (err) {
             console.error('Error populating offer:', err);
             message.content = {
