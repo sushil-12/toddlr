@@ -318,7 +318,7 @@ const makeAnOfferForBundle = async (req, res) => {
 
         // Check if a chat already exists between the buyer and seller
         let chat = await Chat.findOne({
-            participants: { $all: [userId, seller._id] },
+            participants: { $all: [userId, productsList[0].createdBy] },
         });
 
         if (chat) {
@@ -328,7 +328,7 @@ const makeAnOfferForBundle = async (req, res) => {
         } else {
             // Create a new chat
             chat = await Chat.create({
-                participants: [userId, seller._id], // Buyer and seller
+                participants: [userId, productsList[0].createdBy], // Buyer and seller
                 messages: [initialMessage],
             });
         }
