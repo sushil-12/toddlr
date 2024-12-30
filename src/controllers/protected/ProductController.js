@@ -283,7 +283,11 @@ const makeAnOfferForBundle = async (req, res) => {
         if (!seller) {
             throw new CustomError(400, 'Seller details not found for the product');
         }
+        // Extract product Ids from the bundle
+        const productIds = product.products.map((item) => item.productId);
 
+         // Fetch details of all products using the extracted IDs
+         const productsList = await Product.find({ _id: { $in: productIds } });
         // Create the offer
         const offer = await Offer.create({
             bundle: bundleId,
@@ -300,12 +304,14 @@ const makeAnOfferForBundle = async (req, res) => {
                 isBundle: true,
                 offer_id: offer?._id,
                 offer_price,
-                // product_name: product.title,
+                product_name: '',
                 seller_id: product.createdBy,
                 // product_image: product.images[0], // Assuming `image` is a field in the product schema
                 bundle_actual_price: product.totalAmount,
                 status: offer?.status,
                 offer_description,
+                productsList:productsList
+
             },
             createdAt: new Date(),
         };
