@@ -138,8 +138,10 @@ const getMessages = async (req, res) => {
             // Fetch the offer and populate it
             const offer = await Offer.findById(message.content.offer_id).populate('product');
             const messageContent = message.content;
+
             // Update the message content with populated offer details
             message.content = {
+              isBundle: messageContent?.isBundle,
               offer_id: offer?._id,
               offer_price: messageContent.offer_price,
               product_name: offer.product?.title,
@@ -151,8 +153,8 @@ const getMessages = async (req, res) => {
               currentStatus: offer?.status,
               action_done: messageContent?.action_done || false,
               offer_description: messageContent.offer_description,
+              productsList: messageContent?.isBundle === true? messageContent.productsList : []
             };
-            console.log("MESSAGE DETAILS===>", message)
           } catch (err) {
             console.error('Error populating offer:', err);
             message.content = {

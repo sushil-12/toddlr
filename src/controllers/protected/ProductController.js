@@ -481,7 +481,11 @@ const updateOfferForBundle = async (req, res) => {
         }
 
         await offer.save(); // Save the updated offer
+          // Extract product Ids from the bundle
+          const productIds = product.products.map((item) => item.productId);
 
+          // Fetch details of all products using the extracted IDs
+          const productsList = await Product.find({ _id: { $in: productIds } });
         // Generate and save chat message
         const messageContent = {
             isBundle: true,
