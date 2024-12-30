@@ -8,7 +8,7 @@ const { uploadMediaToLibrary } = require('../controllers/common/FileUploader');
 const Chat = require('../models/Chat');
 const { default: mongoose } = require('mongoose');
 const { handleWebhook } = require('../controllers/protected/WebhookController');
-const { answerChildQuestion } = require('../controllers/protected/OpenAiController');
+// const { answerChildQuestion } = require('../controllers/protected/OpenAiController');
 const { createChatWithCoach } = require('../controllers/protected/UserController');
 
 router.get('/get-all-domains', getAllDomain);
@@ -23,7 +23,7 @@ router.post('/media/upload', uploadMediaToLibrary);
 
 // router.post('/contact', checkFormTypeMiddleware, submitContactDetails);
 router.post('/contact', submitContactDetails);
-router.post('/answer-child-question', answerChildQuestion);
+// router.post('/answer-child-question', answerChildQuestion);
 
 
 
