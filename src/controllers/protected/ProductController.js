@@ -90,7 +90,6 @@ const createAndUpdateProduct = async (req, res) => {
     }
 };
 
-
 const getProducts = async (req, res) => {
     try {
         // Extract query parameters for filtering, sorting, and pagination (if any)
@@ -102,23 +101,29 @@ const getProducts = async (req, res) => {
             maxPrice,
             size,
             age,
+            createdBy,
             page = 1,
             limit = 10,
         } = req.query;
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        const createdBy = decodedToken.userId;
-        // Build filter criteria based on query parameters
-        const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // Current time minus 2 days.
 
-        // Build filter criteria based on query parameters
+        // Build filter criteria
+        const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // Current time minus 2 days
+
         const filter = {
-            $or: [
-                { reservedAt: { $exists: false } }, // Products not reserved
-                { reservedAt: { $lte: twoDaysAgo } }, // Products reserved more than two days ago
-                { createdBy: createdBy }, // Products created by the user
+            $and: [
+                {
+                    $or: [
+                        { reservedAt: { $exists: false } }, // Products not reserved
+                        { reservedAt: { $lte: twoDaysAgo } }, // Products reserved more than two days ago
+                    ],
+                },
             ],
         };
+
+        // Add createdBy to the filter if provided in the query
+        if (createdBy) filter.$and.push({ createdBy });
+
+        // Add other query parameters to the filter
         if (category) filter.category = category;
         if (gender) filter.gender = gender;
         if (condition) filter.condition = condition;
