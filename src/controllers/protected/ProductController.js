@@ -495,6 +495,7 @@ const updateOfferForBundle = async (req, res) => {
             bundle_actual_price: offer.bundle.totalAmount,
             status: offer.status,
             offer_description: offer.description,
+            productsList:productsList
         };
 
         await createOrUpdateChat(userId, sellerId, messageContent, messageKey);
