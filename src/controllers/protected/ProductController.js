@@ -348,6 +348,7 @@ const makeAnOfferForBundle = async (req, res) => {
 
 // Helper function to create or update a chat
 const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
+
     const initialMessage = {
         sender: userId,
         content,
@@ -357,7 +358,6 @@ const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
     let chat = await Chat.findOne({
         participants: { $all: [userId, sellerId] },
     });
-
 
     if (chat) {
         // Add the new message to the existing chat
@@ -462,9 +462,7 @@ const updateOfferForBundle = async (req, res) => {
         if (!offer) {
             throw new CustomError(404, 'Offer not found.');
         }
-        console.log(offer, "ODDER")
 
-        const sellerId = offer.bundle.createdBy; // Assuming `owner` is the seller's user ID
 
         // Update offer based on action
         if (action === 'accept') {
@@ -482,16 +480,18 @@ const updateOfferForBundle = async (req, res) => {
 
         await offer.save(); // Save the updated offer
           // Extract product Ids from the bundle
-          const productIds = product.products.map((item) => item.productId);
+          const productIds = offer.bundle.products.map((item) => item.productId);
 
           // Fetch details of all products using the extracted IDs
           const productsList = await Product.find({ _id: { $in: productIds } });
+          const sellerId = productsList[0].createdBy // Assuming all products inside bundle are from same seller
+
         // Generate and save chat message
         const messageContent = {
             isBundle: true,
             offer_id: offer?._id,
             offer_price: offer.price,
-            seller_id: offer.bundle.createdBy,
+            seller_id:sellerId,
             bundle_actual_price: offer.bundle.totalAmount,
             status: offer.status,
             offer_description: offer.description,
