@@ -142,6 +142,7 @@ const getMessages = async (req, res) => {
             // Update the message content with populated offer details
             message.content = {
               isBundle: messageContent?.isBundle,
+              bundleId: offer?.bundle?._id,
               offer_id: offer?._id,
               offer_price: messageContent.offer_price,
               product_name: offer.product?.title,
