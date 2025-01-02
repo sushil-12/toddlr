@@ -52,10 +52,10 @@ io.on('connection', (socket) => {
                 message.content = {
                   offer_id: offer?._id,
                   offer_price: messageContent.offer_price,
-                  product_name: offer.product.title,
-                  seller_id: offer.product.createdBy,
-                  product_image: offer.product.images[0], // Assuming images is an array
-                  product_actual_price: offer.product.price,
+                  product_name: offer?.product?.title,
+                  seller_id: offer?.product?.createdBy,
+                  product_image: offer?.product?.images[0], // Assuming images is an array
+                  product_actual_price: offer?.product?.price,
                   status: messageContent.status,
                   currentStatus: offer?.status,
                   action_done: messageContent?.action_done || false,

@@ -272,14 +272,18 @@ const makeAnOfferForBundle = async (req, res) => {
         }
 
         // Fetch the product to ensure it exists
-        const product = await Bundle.findById(bundleId).populate('createdBy', '_id username email');
+        const product = await Bundle.findById(bundleId).populate('createdBy', '_id username email profile_pic');
         if (!product) {
             throw new CustomError(400, 'Bundle not found');
         }
-
-        console.log(product, "PRODUCT")
         // Extract seller details
         const seller = product.createdBy;
+        const sellerDetails = {
+            sellerId: product.createdBy?._id,
+            sellerName: product.createdBy?.username,
+            email: product.createdBy?.username,
+            profilePicture: product.createdBy?.profile_pic ? product.createdBy?.profile_pic : ''
+        }
         if (!seller) {
             throw new CustomError(400, 'Seller details not found for the product');
         }
@@ -336,7 +340,7 @@ const makeAnOfferForBundle = async (req, res) => {
         // Respond with the created offer and chat details
         return ResponseHandler.success(
             res,
-            { offer, chat },
+            { offer, chat,sellerDetails },
             201,
             'Offer created and chat updated/created successfully'
         );
