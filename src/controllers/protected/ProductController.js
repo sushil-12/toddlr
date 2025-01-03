@@ -109,17 +109,24 @@ const getProducts = async (req, res) => {
         // Build filter criteria
         const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // Current time minus 2 days
 
+
+        // Commented code in case login user is required to get the products
+        // const token = req.headers.authorization.split(' ')[1];
+        // const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        // const userId = decodedToken.userId;
+
         const filter = {
             $and: [
-                {
-                    $or: [
-                        { reservedAt: { $exists: false } }, // Products not reserved
-                        { reservedAt: { $lte: twoDaysAgo } }, // Products reserved more than two days ago
-                    ],
-                },
+            {
+                $or: [
+                { reservedAt: { $exists: false } }, // Products not reserved
+                { reservedAt: { $lte: twoDaysAgo } }, // Products reserved more than two days ago
+                { createdBy: createdBy } // Products created by the user
+                ],
+            },
             ],
         };
-
+        
         // Add createdBy to the filter if provided in the query
         if (createdBy) filter.$and.push({ createdBy });
 
