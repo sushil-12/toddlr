@@ -96,6 +96,7 @@ const sendMessage = async (req, res) => {
       chatId,
       {
         $push: { messages: { sender, content } },
+        $set: { updatedAt: new Date() } // Update the updatedAt field
       },
       { new: true }
     ).populate('messages.sender', 'username email');
@@ -259,7 +260,8 @@ const getUserChats = async (req, res) => {
         path: 'messages',
         options: { sort: { createdAt: -1 } }, // Sort messages by most recent first
         select: 'content createdAt readBy', // Select necessary message fields
-      });
+      })
+      .sort({ updatedAt: -1 }); // Sort chats by updatedAt field
 
     if (!chats || chats.length === 0) {
       throw new CustomError(404, 'No chats found for this user');
