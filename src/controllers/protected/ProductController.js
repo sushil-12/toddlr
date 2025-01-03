@@ -181,6 +181,11 @@ const getProductDetails = async (req, res) => {
             return ResponseHandler.error(res, null, 404, 'Product not found');
         }
 
+        if (product.reservedAt && new Date() - new Date(product.reservedAt) > 2 * 24 * 60 * 60 * 1000) {
+            product.reservedAt = null;
+        }
+        await product.save();
+
         // Respond with the product details
         return ResponseHandler.success(res, { product, sellerDetail }, 200, 'Product retrieved successfully');
     } catch (error) {
