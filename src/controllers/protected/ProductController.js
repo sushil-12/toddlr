@@ -144,6 +144,12 @@ const getProducts = async (req, res) => {
 
         // Fetch products with pagination
         const products = await Product.paginate(filter, options);
+        products.docs = products.docs.map(product => {
+            if (product.reservedAt && new Date() - new Date(product.reservedAt) > 2 * 24 * 60 * 60 * 1000) {
+                product.reservedAt = null;
+            }
+            return product;
+        });
 
         // Respond with the products data
         return ResponseHandler.success(res, products, 200, 'Products retrieved successfully');
