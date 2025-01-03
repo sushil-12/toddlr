@@ -174,7 +174,8 @@ const getProductDetails = async (req, res) => {
 
         // Fetch product details by ID
         const product = await Product.findById(id);
-        const sellerDetail = product.createdBy ? await getUserRepository(product.createdBy) : null;
+        const sellerDetail = product.createdBy ? await getUserRepository(product.createdBy.toString()) : null;
+        console.log(sellerDetail,  product.createdBy.toString(), "SELLAR DATA")
 
         // If product not found, respond with an error
         if (!product) {
@@ -370,46 +371,6 @@ const makeAnOfferForBundle = async (req, res) => {
     }
 };
 
-// Helper function to create or update a chat
-const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
-
-    const initialMessage = {
-        sender: userId,
-        content,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    };
-
-    let chat = await Chat.findOne({
-        participants: { $all: [userId, sellerId] },
-    });
-
-    if (chat) {
-        // Add the new message to the existing chat
-        const index = chat.messages.findIndex(message => message._id == messageKey); // Find index of the message
-        console.log(index);
-        if (index !== -1) {
-            // Message exists, update its content
-            chat.messages[index].content.action_done = true;
-            chat.markModified('messages');
-            await chat.save();
-        } else {
-            console.error("Message not found in chat.messages");
-        }
-
-        console.log(chat.messages[index])
-        chat.messages.push(initialMessage);
-        chat.updatedAt = new Date();
-        await chat.save();
-    } else {
-        // Create a new chat
-        chat = await Chat.create({
-            participants: [userId, sellerId], // Buyer and seller
-            messages: [initialMessage],
-        });
-    }
-};
-
 const updateOffer = async (req, res) => {
     try {
         const { offerId } = req.params; // Product and Offer IDs from URL
@@ -531,6 +492,46 @@ const updateOfferForBundle = async (req, res) => {
     } catch (error) {
         console.error(error);
         ErrorHandler.handleError(error, res);
+    }
+};
+
+// Helper function to create or update a chat
+const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
+
+    const initialMessage = {
+        sender: userId,
+        content,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
+
+    let chat = await Chat.findOne({
+        participants: { $all: [userId, sellerId] },
+    });
+
+    if (chat) {
+        // Add the new message to the existing chat
+        const index = chat.messages.findIndex(message => message._id == messageKey); // Find index of the message
+        console.log(index);
+        if (index !== -1) {
+            // Message exists, update its content
+            chat.messages[index].content.action_done = true;
+            chat.markModified('messages');
+            await chat.save();
+        } else {
+            console.error("Message not found in chat.messages");
+        }
+
+        console.log(chat.messages[index])
+        chat.messages.push(initialMessage);
+        chat.updatedAt = new Date();
+        await chat.save();
+    } else {
+        // Create a new chat
+        chat = await Chat.create({
+            participants: [userId, sellerId], // Buyer and seller
+            messages: [initialMessage],
+        });
     }
 };
 

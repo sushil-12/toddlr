@@ -34,7 +34,9 @@ const defaultSidebarJson = {
 }
 
 const getUserRepository = async (userId) => {
+  console.log(userId, "USER ID")
   const user = await User.findById(userId);
+  console.log(user, "USER")
   if (user) {
     const userProfile = {
       _id: user._id,
