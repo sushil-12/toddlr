@@ -283,7 +283,7 @@ const getUserChats = async (req, res) => {
       }, 0);
 
       // Get the most recent message
-      const recentMessage = chat.messages[0];
+      const recentMessage = chat.messages[chat.messages.length - 1];
 
       return {
         chatId: chat._id,
