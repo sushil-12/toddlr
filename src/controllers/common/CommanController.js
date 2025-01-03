@@ -264,7 +264,7 @@ const getUserChats = async (req, res) => {
       .sort({ updatedAt: -1 }); // Sort chats by updatedAt field
 
     if (!chats || chats.length === 0) {
-      throw new CustomError(404, 'No chats found for this user');
+      return ResponseHandler.success(res, [], 200);
     }
 
     // Structure the chat data
