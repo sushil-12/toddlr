@@ -261,7 +261,7 @@ const getUserChats = async (req, res) => {
         options: { sort: { createdAt: -1 } }, // Sort messages by most recent first
         select: 'content createdAt readBy', // Select necessary message fields
       })
-      .sort({ updatedAt: -1 }); // Sort chats by updatedAt field
+      .sort({ updatedAt: 1 }); // Sort chats by updatedAt field
 
     if (!chats || chats.length === 0) {
       return ResponseHandler.success(res, [], 200);
