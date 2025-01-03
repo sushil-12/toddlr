@@ -253,6 +253,7 @@ const makeAnOffer = async (req, res) => {
         if (chat) {
             // Add the new message to the existing chat
             chat.messages.push(initialMessage);
+            chat.updatedAt = new Date();
             await chat.save();
         } else {
             // Create a new chat
@@ -346,6 +347,7 @@ const makeAnOfferForBundle = async (req, res) => {
         if (chat) {
             // Add the new message to the existing chat
             chat.messages.push(initialMessage);
+            chat.updatedAt = new Date();
             await chat.save();
         } else {
             // Create a new chat
@@ -375,6 +377,7 @@ const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
         sender: userId,
         content,
         createdAt: new Date(),
+        updatedAt: new Date(),
     };
 
     let chat = await Chat.findOne({
@@ -396,6 +399,7 @@ const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
 
         console.log(chat.messages[index])
         chat.messages.push(initialMessage);
+        chat.updatedAt = new Date();
         await chat.save();
     } else {
         // Create a new chat
