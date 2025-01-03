@@ -120,6 +120,7 @@ const getProducts = async (req, res) => {
             {
                 $or: [
                 { reservedAt: { $exists: false } }, // Products not reserved
+                { reservedAt: null }, // Products explicitly set to null are also returned 
                 { reservedAt: { $lte: twoDaysAgo } }, // Products reserved more than two days ago
                 { createdBy: createdBy } // Products created by the user
                 ],
@@ -157,7 +158,6 @@ const getProducts = async (req, res) => {
             }
             return product;
         });
-
         // Respond with the products data
         return ResponseHandler.success(res, products, 200, 'Products retrieved successfully');
     } catch (error) {
