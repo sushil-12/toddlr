@@ -157,6 +157,7 @@ const getMessages = async (req, res) => {
               offer_description: messageContent.offer_description,
               productsList: messageContent?.isBundle === true? messageContent.productsList : []
             };
+            console.log("UPDATED MESSAGE CONTENT===>", message.content)
           } catch (err) {
             console.error('Error populating offer:', err);
             message.content = {

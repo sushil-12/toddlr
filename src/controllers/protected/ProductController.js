@@ -374,7 +374,7 @@ const makeAnOfferForBundle = async (req, res) => {
 const updateOffer = async (req, res) => {
     try {
         const { offerId } = req.params; // Product and Offer IDs from URL
-        const { action, counter_price, counter_description, messageKey } = req.body; // Request body data
+        const { action, counter_price, counter_description, messageKey, otherParticipantId } = req.body; // Request body data
         const token = req.headers.authorization.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decodedToken.userId; // Assuming user ID is available from authentication middleware
@@ -389,8 +389,7 @@ const updateOffer = async (req, res) => {
         if (!offer) {
             throw new CustomError(404, 'Offer not found.');
         }
-
-        const sellerId = offer.product.createdBy; // Assuming `owner` is the seller's user ID
+        const participantId = otherParticipantId // 
 
         // Update offer based on action
         if (action === 'accept') {
@@ -420,7 +419,7 @@ const updateOffer = async (req, res) => {
             offer_description: offer.description,
         };
 
-        await createOrUpdateChat(userId, sellerId, messageContent, messageKey);
+        await createOrUpdateChat(userId, participantId, messageContent, messageKey);
 
         // Return success response
         return ResponseHandler.success(res, offer, 200, `Offer ${action}ed successfully.`);
@@ -434,7 +433,7 @@ const updateOffer = async (req, res) => {
 const updateOfferForBundle = async (req, res) => {
     try {
         const { offerId } = req.params; // Product and Offer IDs from URL
-        const { action, counter_price, counter_description, messageKey } = req.body; // Request body data
+        const { action, counter_price, counter_description, messageKey , otherParticipantId} = req.body; // Request body data
         const token = req.headers.authorization.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decodedToken.userId; // Assuming user ID is available from authentication middleware
@@ -471,6 +470,7 @@ const updateOfferForBundle = async (req, res) => {
 
           // Fetch details of all products using the extracted IDs
           const productsList = await Product.find({ _id: { $in: productIds } });
+          const participantId = otherParticipantId
           const sellerId = productsList[0].createdBy // Assuming all products inside bundle are from same seller
 
         // Generate and save chat message
@@ -485,7 +485,7 @@ const updateOfferForBundle = async (req, res) => {
             productsList:productsList
         };
 
-        await createOrUpdateChat(userId, sellerId, messageContent, messageKey);
+        await createOrUpdateChat(userId, participantId, messageContent, messageKey);
 
         // Return success response
         return ResponseHandler.success(res, offer, 200, `Offer ${action}ed successfully.`);
@@ -496,7 +496,7 @@ const updateOfferForBundle = async (req, res) => {
 };
 
 // Helper function to create or update a chat
-const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
+const createOrUpdateChat = async (userId, participantId, content, messageKey) => {
 
     const initialMessage = {
         sender: userId,
@@ -506,12 +506,13 @@ const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
     };
 
     let chat = await Chat.findOne({
-        participants: { $all: [userId, sellerId] },
+        participants: { $all: [userId, participantId] },
     });
+
 
     if (chat) {
         // Add the new message to the existing chat
-        const index = chat.messages.findIndex(message => message._id == messageKey); // Find index of the message
+        const index = chat.messages.findIndex(message => message._id.toString() === messageKey.toString()); // Find index of the message
         console.log(index);
         if (index !== -1) {
             // Message exists, update its content
@@ -529,7 +530,7 @@ const createOrUpdateChat = async (userId, sellerId, content, messageKey) => {
     } else {
         // Create a new chat
         chat = await Chat.create({
-            participants: [userId, sellerId], // Buyer and seller
+            participants: [userId, participantId], // Buyer and seller
             messages: [initialMessage],
         });
     }
