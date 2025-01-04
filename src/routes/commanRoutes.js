@@ -10,6 +10,7 @@ const { default: mongoose } = require('mongoose');
 const { handleWebhook } = require('../controllers/protected/WebhookController');
 // const { answerChildQuestion } = require('../controllers/protected/OpenAiController');
 const { createChatWithCoach } = require('../controllers/protected/UserController');
+const { answerChildQuestion } = require('../controllers/protected/OpenAiController');
 
 router.get('/get-all-domains', getAllDomain);
 // API routes
@@ -23,7 +24,7 @@ router.post('/media/upload', uploadMediaToLibrary);
 
 // router.post('/contact', checkFormTypeMiddleware, submitContactDetails);
 router.post('/contact', submitContactDetails);
-// router.post('/answer-child-question', answerChildQuestion);
+router.post('/answer-child-question', answerChildQuestion);
 
 
 

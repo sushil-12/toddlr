@@ -206,7 +206,7 @@ const makeAnOffer = async (req, res) => {
         const userId = decodedToken.userId; // Assuming user ID is available from authentication middleware
 
         // Validate required fields
-        if (!offer_price || !offer_description) {
+        if (!offer_price) {
             throw new CustomError(400, 'Offer price and description are required');
         }
 
@@ -287,7 +287,7 @@ const makeAnOfferForBundle = async (req, res) => {
         const userId = decodedToken.userId; // Assuming user ID is available from authentication middleware
 
         // Validate required fields
-        if (!offer_price || !offer_description) {
+        if (!offer_price ) {
             throw new CustomError(400, 'Offer price and description are required');
         }
 
