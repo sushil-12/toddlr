@@ -5,17 +5,6 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    items: [{
-        productId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true
-        },
-        quantity: {
-            type: Number,
-            required: true
-        }
-    }],
     totalAmount: {
         type: Number,
         required: true
@@ -28,6 +17,10 @@ const orderSchema = new mongoose.Schema({
     paymentId: {
         type: String,
         required: true
+    },
+    productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
     },
     bundleId: {
         type: mongoose.Schema.Types.ObjectId,

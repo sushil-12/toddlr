@@ -52,6 +52,7 @@ const createMolliePayment = async (req, res) => {
                 return ResponseHandler.success(res, paymentDetails, 200, "Payment Initiated!");
             }
         } catch (error) {
+            console.log(error)
             return ResponseHandler.error(res, 500, "Payment Error !!!");
         }
 

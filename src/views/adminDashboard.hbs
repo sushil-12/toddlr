@@ -10,126 +10,67 @@
 
 <body class="bg-gray-100">
     <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">Admin Dashboard</h1>
+        <h1 class="text-2xl font-bold mb-4 text-center">Admin Dashboard</h1>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-target="ordersTable">
+            <!-- Enhanced Cards with hover effects -->
+            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out transform hover:scale-105" data-target="ordersTable">
                 <h3 class="text-lg font-semibold">Total Orders</h3>
                 <p class="text-2xl">{{orders.length}}</p>
             </div>
-            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-target="usersTable">
+            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out transform hover:scale-105" data-target="usersTable">
                 <h3 class="text-lg font-semibold">Total Users</h3>
                 <p class="text-2xl">{{users.length}}</p>
             </div>
-            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-target="productsTable">
+            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out transform hover:scale-105" data-target="productsTable">
                 <h3 class="text-lg font-semibold">Total Products</h3>
                 <p class="text-2xl">{{products.length}}</p>
             </div>
-            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer" data-target="offersTable">
+            <div class="card bg-white p-4 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 transition duration-300 ease-in-out transform hover:scale-105" data-target="offersTable">
                 <h3 class="text-lg font-semibold">Total Offers</h3>
                 <p class="text-2xl">{{offers.length}}</p>
             </div>
         </div>
 
-        <!-- Orders Table -->
+        <!-- Tables -->
+
         <div id="ordersTable" class="table-container hidden">
             <h2 class="text-xl font-semibold mb-2">Orders</h2>
-            <table class="min-w-full bg-white">
+            <table class="min-w-full bg-white rounded-lg shadow-md">
                 <thead>
-                    <tr>
-                        <th class="py-2 px-4 border-b">Order ID</th>
-                        <th class="py-2 px-4 border-b">User ID</th>
-                        <th class="py-2 px-4 border-b">Product ID</th>
-                        <th class="py-2 px-4 border-b">Total Amount</th>
-                        <th class="py-2 px-4 border-b">Payment Status</th>
+                    <tr class="bg-gray-100">
+                        <th class="py-2 px-4 border-b text-left">Order ID</th>
+                        <th class="py-2 px-4 border-b text-left">Total Amount</th>
+                        <th class="py-2 px-4 border-b text-left">Order Type</th>
+                        <th class="py-2 px-4 border-b text-left">Payment Status</th>
+                        <th class="py-2 px-4 border-b text-left">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{#each orders}}
-                    <tr>
+                    <tr class="hover:bg-gray-50">
                         <td class="py-2 px-4 border-b">{{this._id}}</td>
-                        <td class="py-2 px-4 border-b">{{this.createdBy}}</td>
-                        <td class="py-2 px-4 border-b">{{this.productId}}</td>
                         <td class="py-2 px-4 border-b">{{this.totalAmount}}</td>
-                        <td class="py-2 px-4 border-b">{{this.paymentStatus}}</td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Users Table -->
-        <div id="usersTable" class="table-container hidden">
-            <h2 class="text-xl font-semibold mb-2">Users</h2>
-            <table class="min-w-full bg-white">
-                <thead>
-                    <tr>
-                        <th class="py-2 px-4 border-b">User ID</th>
-                        <th class="py-2 px-4 border-b">Username</th>
-                        <th class="py-2 px-4 border-b">Email</th>
-                        <th class="py-2 px-4 border-b">Role</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each users}}
-                    <tr>
-                        <td class="py-2 px-4 border-b">{{this._id}}</td>
-                        <td class="py-2 px-4 border-b">{{this.username}}</td>
-                        <td class="py-2 px-4 border-b">{{this.email}}</td>
-                        <td class="py-2 px-4 border-b">{{this.role}}</td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Products Table -->
-        <div id="productsTable" class="table-container hidden">
-            <h2 class="text-xl font-semibold mb-2">Products</h2>
-            <table class="min-w-full bg-white">
-                <thead>
-                    <tr>
-                        <th class="py-2 px-4 border-b">Product ID</th>
-                        <th class="py-2 px-4 border-b">Title</th>
-                        <th class="py-2 px-4 border-b">Price</th>
-                        <th class="py-2 px-4 border-b">Category</th>
-                        <th class="py-2 px-4 border-b">Condition</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each products}}
-                    <tr>
-                        <td class="py-2 px-4 border-b">{{this._id}}</td>
-                        <td class="py-2 px-4 border-b">{{this.title}}</td>
-                        <td class="py-2 px-4 border-b">{{this.price}}</td>
-                        <td class="py-2 px-4 border-b">{{this.category}}</td>
-                        <td class="py-2 px-4 border-b">{{this.condition}}</td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Offers Table -->
-        <div id="offersTable" class="table-container hidden">
-            <h2 class="text-xl font-semibold mb-2">Offers</h2>
-            <table class="min-w-full bg-white">
-                <thead>
-                    <tr>
-                        <th class="py-2 px-4 border-b">Offer ID</th>
-                        <th class="py-2 px-4 border-b">Product ID</th>
-                        <th class="py-2 px-4 border-b">User ID</th>
-                        <th class="py-2 px-4 border-b">Price</th>
-                        <th class="py-2 px-4 border-b">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each offers}}
-                    <tr>
-                        <td class="py-2 px-4 border-b">{{this._id}}</td>
-                        <td class="py-2 px-4 border-b">{{this.product}}</td>
-                        <td class="py-2 px-4 border-b">{{this.user}}</td>
-                        <td class="py-2 px-4 border-b">{{this.price}}</td>
+                        <td class="py-2 px-4 border-b">
+                            {{#if this.productId}} Product
+                            {{else if this.bundleId}} Bundle
+                            {{else if this.offerId}} Offer
+                            {{else}} Unknown
+                            {{/if}}
+                        </td>
                         <td class="py-2 px-4 border-b">{{this.status}}</td>
+                        <td class="py-2 px-4 border-b">
+                            <select id="orderStatus-{{this._id}}" class="border rounded p-1">
+                                <option value="Pending" {{#ifEquals this.status "Pending" }}selected{{/ifEquals}}>Pending</option>
+                                <option value="Shipped" {{#ifEquals this.status "Shipped" }}selected{{/ifEquals}}>Shipped</option>
+                                <option value="Delivered" {{#ifEquals this.status "Delivered" }}selected{{/ifEquals}}>Delivered</option>
+                                <option value="Cancelled" {{#ifEquals this.status "Cancelled" }}selected{{/ifEquals}}>Cancelled</option>
+                            </select>
+                            <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 ml-2 transition-all" onclick="updateOrderStatus('{{this._id}}')">Update</button>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="5" class="py-4 px-4 border-b text-center">No orders found.</td>
                     </tr>
                     {{/each}}
                 </tbody>
@@ -137,18 +78,46 @@
         </div>
     </div>
 
-    <script>
-        // JavaScript to toggle table visibility
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('click', () => {
-                document.querySelectorAll('.table-container').forEach(table => {
-                    table.classList.add('hidden');
-                });
-                const targetId = card.getAttribute('data-target');
-                document.getElementById(targetId).classList.remove('hidden');
-            });
-        });
-    </script>
 </body>
 
 </html>
+<script>
+    // JavaScript to toggle table visibility
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.table-container').forEach(table => {
+                table.classList.add('hidden');
+            });
+            const targetId = card.getAttribute('data-target');
+            document.getElementById(targetId).classList.remove('hidden');
+        });
+    });
+
+    // Handle the status update logic
+    function updateOrderStatus(orderId) {
+        const statusSelect = document.getElementById(`orderStatus-${orderId}`);
+        const newStatus = statusSelect.value;
+
+        fetch(`/updateOrderStatus/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Order status updated successfully!');
+            } else {
+                alert('Failed to update order status. Please check the status transition rules.');
+                // Reset to previous status if the update failed
+                statusSelect.value = data.previousStatus;
+            }
+        })
+        .catch(error => {
+            console.error('Error updating status:', error);
+            alert('An error occurred. Please try again later.');
+        });
+    }
+</script>
