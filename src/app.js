@@ -18,6 +18,7 @@ const session = require('express-session');
 const logRequestAndResponse = require('./middleware/logRequestAndResponse');
 const { getLogs } = require('./controllers/common/LogController');
 const Applinks = require('./models/Applinks');
+const { renderDashboard } = require('./controllers/AdminDashboardController');
 
 const app = express();
 
@@ -76,6 +77,9 @@ app.use('/api', protectedRoutes);
 app.get('/', (req, res) => {
     res.send('Hey this is my toddlr API running 🥳');
 });
+// Route to display the admin dashboard
+app.get('/admin/dashboard', renderDashboard);
+
 app.get('/privacy-policy', (req, res) => {
     res.render('privacyPolicy');
 });

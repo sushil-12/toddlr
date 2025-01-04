@@ -41,7 +41,7 @@ router.get('/users/:userId/chats', getUserChats);
 
 router.delete('/chats/:chatId', deleteChat);
 
-router.post('/payment-webhook',handleWebhook)
+router.post('/payment-webhook', handleWebhook)
 
 
 module.exports = router;
