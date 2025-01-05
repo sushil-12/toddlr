@@ -27,6 +27,7 @@ const handleWebhook = async (req, res) => {
             productId: paymentData.productId || null,
             bundleId: paymentData.bundleId || null,
             offerId: paymentData.offerId || null,
+            createdBy: paymentData.createdBy || null,
             createdAt: new Date()
         };
 

@@ -17,6 +17,7 @@ const cloudinary = require('../../config/cloudinary');
 const Website = require('../../models/Websites');
 const Coach = require('../../models/Coach');
 const Chat = require('../../models/Chat');
+const Order = require('../../models/Order');
 
 
 const defaultSidebarJson = {
@@ -34,9 +35,7 @@ const defaultSidebarJson = {
 }
 
 const getUserRepository = async (userId) => {
-  console.log(userId, "USER ID")
   const user = await User.findById(userId);
-  console.log(user, "USER")
   if (user) {
     const userProfile = {
       _id: user._id,
@@ -91,6 +90,24 @@ const getUsersProfile = async (req, res) => {
     };
 
     ResponseHandler.success(res, userProfile, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+const getRecentOrders = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    const orders = await Order.find({ createdBy: userId }).sort({ createdAt: -1 });
+
+    if (!orders || orders.length === 0) {
+      return ResponseHandler.success(res, [], 200);
+    }
+
+    ResponseHandler.success(res, orders, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
@@ -756,5 +773,5 @@ const deleteUser = async (req, res) => {
 }
 
 module.exports = {
-  getProfile, getUsersProfile, getUserRepository, editUserProfile, checkPassword,createChatWithCoach, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
+  getProfile, getUsersProfile, getRecentOrders, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
 };

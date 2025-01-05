@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
-const { getProfile, checkPassword, sendOtpVerificationOnEmail, logout, saveSidebarData, getSidebarData, verifyEmail, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, editUserProfile, createChatWithCoach } = require('../controllers/protected/UserController');
+const { getProfile, checkPassword, sendOtpVerificationOnEmail, logout, saveSidebarData, getSidebarData, verifyEmail, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, editUserProfile, createChatWithCoach, getRecentOrders } = require('../controllers/protected/UserController');
 const { uploadMediaToLibrary, deleteMedia } = require('../controllers/common/FileUploader');
 const { getAllMedia, editMedia, getAllImages } = require('../controllers/common/MediaOperations');
 const { createEditPost, getAllPosts, getPostById, deletePost, quickEditPost, getAllPostTypesAndPages, listFiles } = require('../controllers/protected/PostOperations');
@@ -71,6 +71,7 @@ router.delete('/delete/get-custom-field/:custom_field_id', deleteCustomField);
 
 router.post('/create-edit-user', createOrEditUser);
 router.get('/get-user-profile/:user_id', getUserProfile);
+router.get('/get-recent-orders', getRecentOrders);
 
 router.get('/get-user-listings', getAllUser);
 router.delete('/delete/user/:user_id', deleteUser);
