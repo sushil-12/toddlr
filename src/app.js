@@ -268,7 +268,8 @@ app.post('/updateOrderStatus/:orderId', async (req, res) => {
 
     if (validTransitions[order.status].includes(status)) {
       order.status = status; // Update the status
-      order.save(); // Save the updated order
+      order.statusLogs.push({ status }); // Update the status logs
+      await order.save(); // Save the updated order
       return res.json({ success: true, order: order });
     } else {
       // If invalid transition, return the previous status

@@ -51,7 +51,25 @@ const orderSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
-    }]
+    }],
+    receivedInGoodCondition: {
+        type: Boolean,
+        default: false
+    },
+    orderRating: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0
+    },
+    orderReviewDone: {
+        type: Boolean,
+        default: false
+    },
+    orderReview: {
+        type: String,
+        default: ''
+    }
 });
 
 const Order = mongoose.model('Order', orderSchema);

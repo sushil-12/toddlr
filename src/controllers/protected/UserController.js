@@ -113,6 +113,38 @@ const getRecentOrders = async (req, res) => {
   }
 };
 
+
+const updateOrderReview = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { receivedInGoodCondition, orderRating, orderReview } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      throw new CustomError(404, 'Order not found');
+    }
+    if(order.status !== 'Delivered'){
+      throw new CustomError(400, 'Order is not delivered yet');
+    }
+    if(order.orderReviewDone){
+      throw new CustomError(400, 'Order review already done');
+    }
+   
+
+    order.receivedInGoodCondition = receivedInGoodCondition;
+    order.orderRating = orderRating;
+    order.orderReviewDone = true;
+    order.orderReview = orderReview;
+
+    await order.save();
+
+    ResponseHandler.success(res, { message: 'Order review updated successfully' }, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 const getProfile = async (req, res) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
@@ -773,5 +805,5 @@ const deleteUser = async (req, res) => {
 }
 
 module.exports = {
-  getProfile, getUsersProfile, getRecentOrders, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
+  getProfile, getUsersProfile, getRecentOrders, updateOrderReview, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
 };
