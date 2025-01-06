@@ -224,7 +224,7 @@ const createChatWithCoach = async (req, res) => {
     }
 
     // Check if chat already exists with these participants
-    let chat = await Chat.findOne({ participants: { $all: participants } }).populate('messages.sender', 'username email');
+    let chat = await Chat.findOne({ participants: { $all: participants } });
 
     if (!chat) {
       // If no chat exists, create a new chat with the participants
