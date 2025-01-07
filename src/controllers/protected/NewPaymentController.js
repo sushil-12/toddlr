@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const Payment = require("../../models/Payment");
 const { createMollieClient } = require('@mollie/api-client');
+const Order = require("../../models/Order");
 
 
 const mollieClient = createMollieClient({ apiKey: `${process.env.MOLLIE_API_KEY}` });
@@ -20,6 +21,7 @@ const createMolliePayment = async (req, res) => {
             return ResponseHandler.error(res, 400, "Amount is required");
         }
         try {
+
             const payment = await mollieClient.payments.create({
                 amount: {
                     value: amount,
@@ -29,6 +31,7 @@ const createMolliePayment = async (req, res) => {
                 redirectUrl: 'https://toddlr.page.link/Ymry?screen=payment-success',
                 webhookUrl: 'https://toddlr.onrender.com/api/common/payment-webhook'
             });
+
             const paymentDetails = new Payment({
                 createdBy,
                 productId,
@@ -40,6 +43,18 @@ const createMolliePayment = async (req, res) => {
                 date: new Date()
             });
             const savedPayment = await paymentDetails.save()
+            const orderData = {
+                paymentId: payment.id,
+                paymentStatus: payment.status,
+                totalAmount: amount || 0,
+                productId: productId || null,
+                bundleId: bundleId || null,
+                offerId: offerId || null,
+                createdBy: createdBy || null,
+                createdAt: new Date()
+            };
+            const newOrder = new Order(orderData);
+            await newOrder.save()
             // Forward the customer to payment.getCheckoutUrl().
             const paymentCheckoutUrl = payment.getCheckoutUrl()
             const transactionId = savedPayment.transactionId
