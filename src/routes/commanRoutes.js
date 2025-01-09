@@ -43,7 +43,7 @@ router.get('/users/:userId/chats', getUserChats);
 router.delete('/chats/:chatId', deleteChat);
 
 router.post('/payment-webhook', handleWebhook)
-router.post('/payment-webhook', addFunds)
+router.get('/add-fund-webhook', addFunds)
 
 router.post('/chat/completions', ChatWithToddlerProfile);
 router.post('/chat/bookmark-message', bookmarkMessage);
