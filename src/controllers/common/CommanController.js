@@ -4,6 +4,7 @@ const validator = require('validator');
 const mongoose = require('mongoose');
 const Chat = require('../../models/Chat'); // Assuming Chat model exists
 const Offer = require("../../models/Offer");
+const { default: OpenAI } = require("openai");
 
 // Function to validate the input fields for contact
 const validateContactDetails = (fname, email, message, subject) => {
@@ -357,11 +358,39 @@ const submitContactDetails = async (req, res) => {
   }
 };
 
+const openai = new OpenAI();
+
+const ChatWithToddlerProfile = async (req, res) => {
+  const { toddlr, question } = req.body;
+
+  if (!toddlr || !question) {
+    throw new CustomError(400, 'Toddler profile and question are required');
+  }
+
+  try {
+    const prompt = `Provide a concise answer to not more than in 100 words, Here is some information about the toddler: 
+    Name: ${toddlr.name}, Age: ${toddlr.age}, Gender: ${toddlr.gender}. 
+    Based on this profile, answer the following question: ${question}`;
+
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "gpt-4o-mini",
+    });
+
+    // Send the chat completion in the response
+    ResponseHandler.success(res, completion.choices[0].message, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+
 module.exports = {
   submitContactDetails,
   createChat,
   sendMessage,
   getMessages,
   getUserChats,
+  ChatWithToddlerProfile,
   deleteChat
 };
