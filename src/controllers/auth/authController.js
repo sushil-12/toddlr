@@ -30,6 +30,25 @@ admin.initializeApp({
   databaseURL: 'https://toddlr-baf62-default-rtdb.firebaseio.com',
 });
 
+
+const { createMollieClient } = require('@mollie/api-client');
+const mollieClient = createMollieClient({ apiKey: `${process.env.MOLLIE_API_KEY}` });
+
+
+const createCustomer = async (name, email) => {
+  try {
+    const customer = await mollieClient.customers.create({
+      name,
+      email
+    });
+    return customer;
+  } catch (error) {
+    console.error('Error creating customer:', error);
+    throw error;
+  }
+};
+
+
 const createDynamicLink = async (link) => {
   const apiKey = process.env.FIREBASE_API_KEY; // Replace with your Firebase web API key
   const dynamicLinkDomain = 'https://toddlr.page.link'; // Change this to your dynamic link domain
@@ -107,6 +126,10 @@ const register = async (req, res) => {
     });
 
     // Save the new user in the database
+    const customer = await createCustomer(username, email);
+    
+    newUser.customerID = customer.id;
+
     await newUser.save();
 
     // Generate a verification token that expires in 1 hour

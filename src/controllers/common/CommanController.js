@@ -1,31 +1,37 @@
-const { CustomError, ErrorHandler, ResponseHandler } = require("../../utils/responseHandler");
+const {
+  CustomError,
+  ErrorHandler,
+  ResponseHandler,
+} = require("../../utils/responseHandler");
 const sendMail = require("../../utils/sendMail");
-const validator = require('validator');
-const mongoose = require('mongoose');
-const Chat = require('../../models/Chat'); // Assuming Chat model exists
+const validator = require("validator");
+const mongoose = require("mongoose");
+const Chat = require("../../models/Chat"); // Assuming Chat model exists
 const Offer = require("../../models/Offer");
 const { default: OpenAI } = require("openai");
+const { chat } = require("googleapis/build/src/apis/chat");
 
 // Function to validate the input fields for contact
 const validateContactDetails = (fname, email, message, subject) => {
-  if (!fname || fname === '') {
-    throw new CustomError(400, 'First name is required!');
+  if (!fname || fname === "") {
+    throw new CustomError(400, "First name is required!");
   }
 
-  if (!email || email === '') {
-    throw new CustomError(400, 'Email is required!');
+  if (!email || email === "") {
+    throw new CustomError(400, "Email is required!");
   } else if (!validator.isEmail(email)) {
-    throw new CustomError(400, 'Invalid email address!');
+    throw new CustomError(400, "Invalid email address!");
   }
 
-  if (!message || message === '') {
-    throw new CustomError(400, 'Message is required!');
-  } else if (message.length > 1000) { // Example length limit
-    throw new CustomError(400, 'Message is too long!');
+  if (!message || message === "") {
+    throw new CustomError(400, "Message is required!");
+  } else if (message.length > 1000) {
+    // Example length limit
+    throw new CustomError(400, "Message is too long!");
   }
 
-  if (!subject || subject === '') {
-    throw new CustomError(400, 'Subject is required');
+  if (!subject || subject === "") {
+    throw new CustomError(400, "Subject is required");
   }
 };
 
@@ -34,12 +40,14 @@ const createChat = async (req, res) => {
   const { participants } = req.body;
 
   if (participants.length !== 2) {
-    throw new CustomError(400, 'Exactly two participants are required');
+    throw new CustomError(400, "Exactly two participants are required");
   }
 
   try {
     // Check if chat already exists
-    let chat = await Chat.findOne({ participants: { $all: participants } }).populate('messages.sender', 'username email');
+    let chat = await Chat.findOne({
+      participants: { $all: participants },
+    }).populate("messages.sender", "username email");
     if (!chat) {
       // Create a new chat
       chat = await Chat.create({ participants });
@@ -48,10 +56,16 @@ const createChat = async (req, res) => {
     // Manipulate the messages if necessary
     const updatedMessages = await Promise.all(
       chat.messages.map(async (message) => {
-        if (message.content && typeof message.content === 'object' && message.content.offer_id) {
+        if (
+          message.content &&
+          typeof message.content === "object" &&
+          message.content.offer_id
+        ) {
           try {
             // Fetch the offer and populate it
-            const offer = await Offer.findById(message.content.offer_id).populate('product');
+            const offer = await Offer.findById(
+              message.content.offer_id
+            ).populate("product");
             const messageContent = message.content;
             // Update the message content with populated offer details
             message.content = {
@@ -67,10 +81,10 @@ const createChat = async (req, res) => {
               offer_description: messageContent.offer_description,
             };
           } catch (err) {
-            console.error('Error populating offer:', err);
+            console.error("Error populating offer:", err);
             message.content = {
               ...message.content,
-              error: 'Failed to fetch offer details'
+              error: "Failed to fetch offer details",
             };
           }
         }
@@ -79,13 +93,15 @@ const createChat = async (req, res) => {
     );
 
     // Send the updated chat with manipulated messages
-    ResponseHandler.success(res, { ...chat.toObject(), messages: updatedMessages }, 201);
-
+    ResponseHandler.success(
+      res,
+      { ...chat.toObject(), messages: updatedMessages },
+      201
+    );
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
 };
-
 
 // Chat API - Send a message in a chat
 const sendMessage = async (req, res) => {
@@ -97,12 +113,12 @@ const sendMessage = async (req, res) => {
       chatId,
       {
         $push: { messages: { sender, content } },
-        $set: { updatedAt: new Date() } // Update the updatedAt field
+        $set: { updatedAt: new Date() }, // Update the updatedAt field
       },
       { new: true }
-    ).populate('messages.sender', 'username email');
+    ).populate("messages.sender", "username email");
     if (!chat) {
-      throw new CustomError(400, 'Chat not found');
+      throw new CustomError(400, "Chat not found");
     }
     ResponseHandler.success(res, chat, 200);
   } catch (error) {
@@ -115,30 +131,37 @@ const getMessages = async (req, res) => {
   const { chatId } = req.params;
 
   try {
-    const chat = await Chat.findById(chatId)
-      .populate({
-        path: 'messages',
-        options: { sort: { timestamp: -1 } }, // Sort messages by timestamp in ascending order
-        populate: {
-          path: 'sender',
-          select: 'username email', // Fetch sender details
-        },
-      });
+    const chat = await Chat.findById(chatId).populate({
+      path: "messages",
+      options: { sort: { timestamp: -1 } }, // Sort messages by timestamp in ascending order
+      populate: {
+        path: "sender",
+        select: "username email", // Fetch sender details
+      },
+    });
 
     if (!chat) {
-      throw new CustomError(400, 'Chat not found');
+      throw new CustomError(400, "Chat not found");
     }
     if (chat) {
-      chat.messages = chat.messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      chat.messages = chat.messages.sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      );
     }
 
     // Iterate through each message to check if message.content is an object and needs manipulation
     const updatedMessages = await Promise.all(
       chat.messages.map(async (message) => {
-        if (message.content && typeof message.content === 'object' && message.content.offer_id) {
+        if (
+          message.content &&
+          typeof message.content === "object" &&
+          message.content.offer_id
+        ) {
           try {
             // Fetch the offer and populate it
-            const offer = await Offer.findById(message.content.offer_id).populate('product');
+            const offer = await Offer.findById(
+              message.content.offer_id
+            ).populate("product");
             const messageContent = message.content;
 
             // Update the message content with populated offer details
@@ -148,22 +171,28 @@ const getMessages = async (req, res) => {
               offer_id: offer?._id,
               offer_price: messageContent.offer_price,
               product_name: offer.product?.title,
-              condition:offer.product?.condition,
-              seller_id:  messageContent?.isBundle === true? messageContent.seller_id: offer.product?.createdBy,
+              condition: offer.product?.condition,
+              seller_id:
+                messageContent?.isBundle === true
+                  ? messageContent.seller_id
+                  : offer.product?.createdBy,
               product_image: offer.product?.images[0], // Assuming images is an array
               product_actual_price: offer.product?.price,
               status: messageContent.status,
               currentStatus: offer?.status,
               action_done: messageContent?.action_done || false,
               offer_description: messageContent.offer_description,
-              productsList: messageContent?.isBundle === true? messageContent.productsList : []
+              productsList:
+                messageContent?.isBundle === true
+                  ? messageContent.productsList
+                  : [],
             };
-            console.log("UPDATED MESSAGE CONTENT===>", message.content)
+            console.log("UPDATED MESSAGE CONTENT===>", message.content);
           } catch (err) {
-            console.error('Error populating offer:', err);
+            console.error("Error populating offer:", err);
             message.content = {
               ...message.content,
-              error: 'Failed to fetch offer details'
+              error: "Failed to fetch offer details",
             };
           }
         }
@@ -177,7 +206,6 @@ const getMessages = async (req, res) => {
     ErrorHandler.handleError(error, res);
   }
 };
-
 
 // Chat API - Get all chats for a specific user
 // const getUserChats = async (req, res) => {
@@ -251,17 +279,17 @@ const getUserChats = async (req, res) => {
 
   // Validate userId format
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new CustomError(400, 'Invalid user ID format');
+    throw new CustomError(400, "Invalid user ID format");
   }
 
   try {
     // Find all chats where the user is a participant
     const chats = await Chat.find({ participants: userId })
-      .populate('participants', 'username email profile_pic') // Populate participants' details
+      .populate("participants", "username email profile_pic") // Populate participants' details
       .populate({
-        path: 'messages',
+        path: "messages",
         options: { sort: { createdAt: -1 } }, // Sort messages by most recent first
-        select: 'content createdAt readBy', // Select necessary message fields
+        select: "content createdAt readBy", // Select necessary message fields
       })
       .sort({ updatedAt: 1 }); // Sort chats by updatedAt field
 
@@ -309,7 +337,6 @@ const getUserChats = async (req, res) => {
   }
 };
 
-
 // Chat API - Delete a chat
 const deleteChat = async (req, res) => {
   const { chatId } = req.params;
@@ -317,9 +344,9 @@ const deleteChat = async (req, res) => {
   try {
     const chat = await Chat.findByIdAndDelete(chatId);
     if (!chat) {
-      throw new CustomError(404, 'Chat not found')
+      throw new CustomError(404, "Chat not found");
     }
-    ResponseHandler.success(res, { message: 'Chat deleted successfully' }, 200);
+    ResponseHandler.success(res, { message: "Chat deleted successfully" }, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
@@ -335,7 +362,7 @@ const submitContactDetails = async (req, res) => {
     email,
     message,
     subject,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   try {
@@ -346,13 +373,16 @@ const submitContactDetails = async (req, res) => {
       from: email,
       to: process.env.CONTACT_SUPPORT_EMAIL,
       subject: subject,
-      text: `${message}\n\nFrom: ${fname} <${email}>`
+      text: `${message}\n\nFrom: ${fname} <${email}>`,
     };
 
     // Send email
     await sendMail(mailOptions);
-    ResponseHandler.success(res, { email_sent: true, message: "Message sent successfully" }, 200);
-
+    ResponseHandler.success(
+      res,
+      { email_sent: true, message: "Message sent successfully" },
+      200
+    );
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
@@ -361,10 +391,10 @@ const submitContactDetails = async (req, res) => {
 const openai = new OpenAI();
 
 const ChatWithToddlerProfile = async (req, res) => {
-  const { toddlr, question } = req.body;
+  const { toddlr, question, chatId, senderId, coachId } = req.body;
 
   if (!toddlr || !question) {
-    throw new CustomError(400, 'Toddler profile and question are required');
+    throw new CustomError(400, "Toddler profile and question are required");
   }
 
   try {
@@ -372,10 +402,43 @@ const ChatWithToddlerProfile = async (req, res) => {
     Name: ${toddlr.name}, Age: ${toddlr.age}, Gender: ${toddlr.gender}. 
     Based on this profile, answer the following question: ${question}`;
 
+    if(chatId && senderId) {
+      const chat = await Chat.findById(chatId);
+      if (!chat) {
+        throw new CustomError(404, "Chat not found");
+      }
+      const resquestMessage = {
+        sender: senderId,
+        content: question, // Initial message from the coach
+        timestamp: new Date(),
+      };
+
+      chat.messages.push(resquestMessage);
+      chat.save();
+    }
+
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
       model: "gpt-4o-mini",
     });
+
+    if(chatId && senderId) {
+      const chat = await Chat.findById(chatId);
+      if (!chat) {
+        throw new CustomError(404, "Chat not found");
+      }
+      const responseMessage = {
+        sender: coachId,
+        content: completion.choices[0].message,
+        timestamp: new Date(),
+      };
+      
+      
+      chat.messages.push(responseMessage);
+      chat.save();
+    }
+
+    
 
     // Send the chat completion in the response
     ResponseHandler.success(res, completion.choices[0].message, 200);
@@ -385,12 +448,63 @@ const ChatWithToddlerProfile = async (req, res) => {
 };
 
 
+// Chat API - Bookmark a chat message
+const bookmarkMessage = async (req, res) => {
+  const { chatId, messageId } = req.body;
+
+  try {
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      throw new CustomError(404, "Chat not found");
+    }
+
+    const message = chat.messages.id(messageId);
+    if (!message) {
+      throw new CustomError(404, "Message not found");
+    }
+
+    message.bookmarked = true;
+    message.bookmarkedAt = new Date();
+
+    await chat.save();
+
+    ResponseHandler.success(res, { message: "Message bookmarked successfully" }, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+// Chat API - Get bookmarked messages in a chat
+const getBookmarkedMessages = async (req, res) => {
+  const { chatId } = req.params;
+
+  try {
+    const chat = await Chat.findById(chatId).populate({
+      path: "messages",
+      match: { bookmarked: true }, // Filter messages to only include bookmarked ones
+    });
+
+    if (!chat) {
+      throw new CustomError(404, "Chat not found");
+    }
+
+    // Filter out messages that are not bookmarked
+    const bookmarkedMessages = chat.messages.filter(message => message.bookmarked);
+
+    ResponseHandler.success(res, bookmarkedMessages, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 module.exports = {
+  bookmarkMessage,
+  getBookmarkedMessages,
   submitContactDetails,
   createChat,
   sendMessage,
   getMessages,
   getUserChats,
   ChatWithToddlerProfile,
-  deleteChat
+  deleteChat,
 };
