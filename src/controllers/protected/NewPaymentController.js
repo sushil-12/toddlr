@@ -11,7 +11,7 @@ const mollieClient = createMollieClient({ apiKey: `${process.env.MOLLIE_API_KEY}
 
 const addFunds = async (req, res) => {
     try {
-        const { userId, amount } = req.params;
+        const { userId, amount } = req.query;
 
         if (!amount) {
             return ResponseHandler.error(res, 400, "Amount is required");
@@ -28,7 +28,7 @@ const addFunds = async (req, res) => {
         user.walletBalance += parseFloat(amount);
         await user.save();
 
-        return ResponseHandler.success(res, { balance: user.balance }, 200, "Funds added successfully");
+        return ResponseHandler.success(res, { walletBalance: user.walletBalance }, 200, "Funds added successfully");
     } catch (error) {
         console.log(error);
         return ResponseHandler.error(res, 500, "Unable to add funds");
