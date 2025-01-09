@@ -9,8 +9,11 @@ const ChatSchema = new mongoose.Schema({
       sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       content: { type: mongoose.Schema.Types.Mixed, required: true }, // To store flexible message content
       timestamp: { type: Date, default: Date.now },
+      bookmarked: { type: Boolean, default: false },
+      bookmarkedAt: { type: Date },
     },
   ],
+  
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

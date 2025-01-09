@@ -10,7 +10,7 @@ const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, de
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus } = require('../controllers/protected/ProductController');
 const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController');
-const { createMolliePayment, getPaymentStatus } = require('../controllers/protected/NewPaymentController');
+const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2 } = require('../controllers/protected/NewPaymentController');
 const router = express.Router();
 
 // Apply the token verification middleware to all routes in this router
@@ -89,6 +89,8 @@ router.get('/list-files', listFiles);
 
 router.post('/create-transaction', createMolliePayment);
 router.get('/get-payment-status', getPaymentStatus);
+router.post('/add-funds', createMolliePaymentV2);
+
 
 router.post('/cart/create-bundle', createBundle);
 router.get('/list-bundle', listBundles);
