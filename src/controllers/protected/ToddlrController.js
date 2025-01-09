@@ -19,7 +19,7 @@ const addToddlers = async (req, res) => {
     // Prepare toddler documents with parentId
     const toddlerDocuments = toddlers.map((toddler) => ( console.log(toddler),{
       parentId,
-      childName: toddler.childName== ''  || toddler.childName== null ? 'toddler' : toddler.childName ,
+      childName: toddler.childName== ''  || toddler.childName== null ? 'Toddlr' : toddler.childName ,
       gender: toddler.gender == '' ? 'prefer_not_to_say' : toddler.gender,
       birthDate: toddler.birthDate,
       profilePhotoPath: toddler.profilePhotoPath || '',
