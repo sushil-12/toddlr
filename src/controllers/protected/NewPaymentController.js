@@ -107,7 +107,7 @@ const createMolliePaymentV2 = async (req, res) => {
                 },
                 description: 'Add funds to wallet for user id - ' + createdBy,
                 redirectUrl: 'https://toddlr.page.link/Ymry?screen=payment-success',
-                webhookUrl: 'https://toddlr.onrender.com/api/common/payment-webhook?userId=' + createdBy+'&amount='+amount
+                webhookUrl: 'https://toddlr.onrender.com/api/common/add-fund-webhook?userId=' + createdBy+'&amount='+amount
             });
             const paymentDetails = new Payment({
                 createdBy,

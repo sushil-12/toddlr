@@ -10,6 +10,7 @@ const { default: mongoose } = require('mongoose');
 const { handleWebhook } = require('../controllers/protected/WebhookController');
 // const { answerChildQuestion } = require('../controllers/protected/OpenAiController');
 const { createChatWithCoach } = require('../controllers/protected/UserController');
+const { addFunds } = require('../controllers/protected/NewPaymentController');
 
 router.get('/get-all-domains', getAllDomain);
 // API routes
@@ -42,6 +43,7 @@ router.get('/users/:userId/chats', getUserChats);
 router.delete('/chats/:chatId', deleteChat);
 
 router.post('/payment-webhook', handleWebhook)
+router.post('/payment-webhook', addFunds)
 
 router.post('/chat/completions', ChatWithToddlerProfile);
 router.post('/chat/bookmark-message', bookmarkMessage);
