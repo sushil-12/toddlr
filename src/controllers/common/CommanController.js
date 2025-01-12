@@ -207,72 +207,6 @@ const getMessages = async (req, res) => {
   }
 };
 
-// Chat API - Get all chats for a specific user
-// const getUserChats = async (req, res) => {
-//   const { userId } = req.params;
-
-//   // Validate userId format
-//   if (!mongoose.Types.ObjectId.isValid(userId)) {
-//     throw new CustomError(400, 'Invalid user ID format');
-//   }
-
-//   try {
-//     // Find all chats where the user is a participant
-//     const chats = await Chat.find({ participants: userId })
-//       .populate('participants', 'username email'); // Populate participants' name and email
-
-//     if (!chats || chats.length === 0) {
-//       throw new CustomError(404, 'No chats found for this user');
-//     }
-
-//     // Iterate through each chat and check message contents
-//     const updatedChats = await Promise.all(
-//       chats.map(async (chat) => {
-//         // Modify messages if necessary
-//         const updatedMessages = await Promise.all(
-//           chat.messages.map(async (message) => {
-//             if (message.content && typeof message.content === 'object' && message.content.offer_id) {
-//               try {
-//                 // Fetch the offer and populate it
-//                 const offer = await Offer.findById(message.content.offer_id).populate('product');
-//                 const messageContent = message.content;
-//                 // Update the message content with populated offer details
-//                 message.content = {
-//                   offer_id: offer?._id,
-//                   offer_price: messageContent.offer_price,
-//                   product_name: offer.product.title,
-//                   seller_id: offer.product.createdBy,
-//                   product_image: offer.product.images[0], // Assuming images is an array
-//                   product_actual_price: offer.product.price,
-//                   status: messageContent.status,
-//                   currentStatus: offer?.status,
-//                   action_done: messageContent?.action_done || false,
-//                   offer_description: messageContent.offer_description,
-//                 };
-//               } catch (err) {
-//                 console.error('Error populating offer:', err);
-//                 message.content = {
-//                   ...message.content,
-//                   error: 'Failed to fetch offer details'
-//                 };
-//               }
-//             }
-//             return message;
-//           })
-//         );
-
-//         // Replace the chat messages with updated ones
-//         chat.messages = updatedMessages;
-//         return chat;
-//       })
-//     );
-
-//     // Send the updated chats in the response
-//     ResponseHandler.success(res, updatedChats, 200);
-//   } catch (error) {
-//     ErrorHandler.handleError(error, res);
-//   }
-// };
 
 const getUserChats = async (req, res) => {
   const { userId } = req.params;
@@ -391,30 +325,32 @@ const submitContactDetails = async (req, res) => {
 const openai = new OpenAI();
 
 const ChatWithToddlerProfile = async (req, res) => {
-  const { toddlr, question, chatId, senderId, coachId } = req.body;
+  const { toddler_id, toddlr, question, chatId, senderId, coachId } = req.body;
 
   if (!toddlr || !question) {
     throw new CustomError(400, "Toddler profile and question are required");
   }
 
   try {
-    const prompt = `Provide a concise answer to not more than in 100 words, Here is some information about the toddler: 
+    const prompt = `Provide a concise answer in not more than 100 words. Here is some information about the toddler: 
     Name: ${toddlr.name}, Age: ${toddlr.age}, Gender: ${toddlr.gender}. 
     Based on this profile, answer the following question: ${question}`;
 
-    if(chatId && senderId) {
-      const chat = await Chat.findById(chatId);
+    let chat;
+    if (chatId && senderId) {
+      chat = await Chat.findById(chatId);
       if (!chat) {
         throw new CustomError(404, "Chat not found");
       }
-      const resquestMessage = {
+      const requestMessage = {
         sender: senderId,
-        content: question, // Initial message from the coach
+        content: question,
         timestamp: new Date(),
       };
 
-      chat.messages.push(resquestMessage);
-      chat.save();
+      chat.messages.push(requestMessage);
+      chat.toddler = toddler_id;
+      await chat.save();
     }
 
     const completion = await openai.chat.completions.create({
@@ -422,26 +358,23 @@ const ChatWithToddlerProfile = async (req, res) => {
       model: "gpt-4o-mini",
     });
 
-    if(chatId && senderId) {
-      const chat = await Chat.findById(chatId);
+    if (chatId && senderId) {
+      chat = await Chat.findById(chatId);
       if (!chat) {
         throw new CustomError(404, "Chat not found");
       }
       const responseMessage = {
         sender: coachId,
-        content: completion.choices[0].message,
+        content: completion.choices[0].message.content,
         timestamp: new Date(),
       };
-      
-      
+
       chat.messages.push(responseMessage);
-      chat.save();
+      await chat.save();
     }
 
-    
-
-    // Send the chat completion in the response
-    ResponseHandler.success(res, completion.choices[0].message, 200);
+    const chatLastMessage = chat.messages.slice(-1)[0];
+    ResponseHandler.success(res, chatLastMessage, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
