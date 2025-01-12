@@ -4,6 +4,7 @@ const ChatSchema = new mongoose.Schema({
   participants: [
     { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   ],
+  toddler: { type: mongoose.Schema.Types.ObjectId, ref: 'Toddler' }, // Optional field with Toddler model
   messages: [
     {
       sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -13,7 +14,6 @@ const ChatSchema = new mongoose.Schema({
       bookmarkedAt: { type: Date },
     },
   ],
-  
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
