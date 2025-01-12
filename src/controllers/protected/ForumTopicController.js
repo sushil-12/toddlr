@@ -18,7 +18,10 @@ const createTopic = async (req, res) => {
                 message: message,
                 category: category,
                 tag: tag,
-                createdAt:Date.now()
+                createdAt:Date.now(),
+                pins:[],
+                members:[],
+                likeCount:[]
             }
         )
         const savedTopic = await topic.save()

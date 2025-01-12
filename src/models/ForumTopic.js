@@ -27,6 +27,45 @@ const forumTopicSchema = new mongoose.Schema({
         enum: ["healthcare", "nutrition", "feeding"],
         required: true,
     },
+    pins: [
+        {
+            pinnedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User', 
+                required: true,
+            },
+            pinnedAt: {
+                type: Date,
+                default: Date.now, 
+            }
+        }
+    ],
+    members: [
+        {
+            joinedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User', 
+                required: true,
+            },
+            joinedAt: {
+                type: Date,
+                default: Date.now, 
+            }
+        }
+    ],
+    likeCount:[
+        {
+            likedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User', 
+                required: true,
+            },
+            likedAt:{
+                type: Date,
+                default: Date.now,
+            }
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now,
