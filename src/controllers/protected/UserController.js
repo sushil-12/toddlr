@@ -198,7 +198,7 @@ const createChatWithCoach = async (req, res) => {
     let coachId = user.coach ? user.coach._id : null; // If a coach is assigned, get their ID
 
     // If no coach assigned, create a new coach and associate with the user
-    if (!coachId) {
+
       const newCoach = new Coach({
         coachName: 'Coach_' + userId, // You can customize the coach name
         userId: userId,
@@ -214,7 +214,7 @@ const createChatWithCoach = async (req, res) => {
         { coach: coachId }, // Update the 'coach' field with the coachId
         { new: true } // Return the updated document
       ).populate('coach');
-    }
+
 
     const participants = [userId, coachId]; // Set participants to user and coach
     console.log("coachId ID", coachId);

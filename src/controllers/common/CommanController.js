@@ -10,6 +10,7 @@ const Chat = require("../../models/Chat"); // Assuming Chat model exists
 const Offer = require("../../models/Offer");
 const { default: OpenAI } = require("openai");
 const { chat } = require("googleapis/build/src/apis/chat");
+const { isCancel } = require("axios");
 
 // Function to validate the input fields for contact
 const validateContactDetails = (fname, email, message, subject) => {
@@ -344,6 +345,8 @@ const ChatWithToddlerProfile = async (req, res) => {
       }
       const requestMessage = {
         sender: senderId,
+        chatCreatedBy: senderId,
+        isCoachChat:true,
         toddler: toddler_id,
         content: question,
         timestamp: new Date(),
@@ -368,12 +371,15 @@ const ChatWithToddlerProfile = async (req, res) => {
       console.log("completion?.choices[0]?.message?.content", completion?.choices[0]?.message?.content)
       const responseMessage = {
         sender: coachId,
+        chatCreatedBy: senderId,
         toddler: toddler_id,
         content: completion?.choices[0]?.message?.content,
         timestamp: new Date(),
       };
 
       chat.messages.push(responseMessage);
+      chat.isCoachChat = true;
+      chat.chatCreatedBy = senderId;
       await chat.save();
     }
 
@@ -413,10 +419,10 @@ const bookmarkMessage = async (req, res) => {
 
 // Chat API - Get bookmarked messages in a chat
 const getBookmarkedMessages = async (req, res) => {
-  const { chatId } = req.params;
-
+  const { senderId } = req.params;
+  console.log("senderId", senderId);
   try {
-    const chat = await Chat.findById(chatId).populate({
+    const chats = await Chat.find({ chatCreatedBy: senderId }).populate({
       path: "messages",
       match: { bookmarked: true }, // Filter messages to only include bookmarked ones
       populate: {
@@ -424,12 +430,15 @@ const getBookmarkedMessages = async (req, res) => {
       },
     });
 
-    if (!chat) {
-      throw new CustomError(404, "Chat not found");
+    if (!chats || chats.length === 0) {
+      throw new CustomError(404, "No chats found");
     }
 
-    // Filter out messages that are not bookmarked
-    const bookmarkedMessages = chat.messages.filter(message => message.bookmarked);
+    // Collect all bookmarked messages from all chats
+    const bookmarkedMessages = chats.reduce((acc, chat) => {
+      const messages = chat.messages.filter((message) => message.bookmarked);
+      return acc.concat(messages);
+    }, []);
 
     ResponseHandler.success(res, bookmarkedMessages, 200);
   } catch (error) {

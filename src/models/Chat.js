@@ -4,7 +4,8 @@ const ChatSchema = new mongoose.Schema({
   participants: [
     { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   ],
- 
+  isCoachChat: { type: Boolean, default: false },
+  chatCreatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   messages: [
     {
       sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

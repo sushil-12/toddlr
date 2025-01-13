@@ -47,7 +47,7 @@ router.get('/add-fund-webhook', addFunds)
 
 router.post('/chat/completions', ChatWithToddlerProfile);
 router.post('/chat/bookmark-message', bookmarkMessage);
-router.get('/chat/get-bookmark-message/:chatId', getBookmarkedMessages);
+router.get('/chat/get-bookmark-message/:senderId', getBookmarkedMessages);
 
 
 module.exports = router;
