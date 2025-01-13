@@ -344,6 +344,7 @@ const ChatWithToddlerProfile = async (req, res) => {
       }
       const requestMessage = {
         sender: senderId,
+        toddler: toddler_id,
         content: question,
         timestamp: new Date(),
       };
@@ -363,9 +364,12 @@ const ChatWithToddlerProfile = async (req, res) => {
       if (!chat) {
         throw new CustomError(404, "Chat not found");
       }
+
+      console.log("completion?.choices[0]?.message?.content", completion?.choices[0]?.message?.content)
       const responseMessage = {
         sender: coachId,
-        content: completion.choices[0].message.content,
+        toddler: toddler_id,
+        content: completion?.choices[0]?.message?.content,
         timestamp: new Date(),
       };
 
@@ -415,6 +419,9 @@ const getBookmarkedMessages = async (req, res) => {
     const chat = await Chat.findById(chatId).populate({
       path: "messages",
       match: { bookmarked: true }, // Filter messages to only include bookmarked ones
+      populate: {
+        path: "toddler",
+      },
     });
 
     if (!chat) {
