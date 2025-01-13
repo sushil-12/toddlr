@@ -373,7 +373,7 @@ const ChatWithToddlerProfile = async (req, res) => {
       await chat.save();
     }
 
-    const chatLastMessage = chat.messages.slice(-1)[0];
+    const chatLastMessage = chat?.messages?.slice(-1)[0];
     ResponseHandler.success(res, chatLastMessage, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
