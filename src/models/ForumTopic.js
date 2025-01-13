@@ -40,6 +40,11 @@ const forumTopicSchema = new mongoose.Schema({
             }
         }
     ],
+    postType: {
+        type: String,
+        enum: ["sell_an_item","story","post","topic"],
+        required: true,
+    },
     members: [
         {
             joinedBy: {
@@ -69,6 +74,10 @@ const forumTopicSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
     }
 });
 
