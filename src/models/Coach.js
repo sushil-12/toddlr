@@ -4,7 +4,7 @@ const coachSchema = new mongoose.Schema({
   coachName: {
     type: String,
     required: true,
-    unique: true, // Ensure the coach name is unique
+    unique: false, // Ensure the coach name is unique
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,

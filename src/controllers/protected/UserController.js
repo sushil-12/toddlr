@@ -124,13 +124,13 @@ const updateOrderReview = async (req, res) => {
     if (!order) {
       throw new CustomError(404, 'Order not found');
     }
-    if(order.status !== 'Delivered'){
+    if (order.status !== 'Delivered') {
       throw new CustomError(400, 'Order is not delivered yet');
     }
-    if(order.orderReviewDone){
+    if (order.orderReviewDone) {
       throw new CustomError(400, 'Order review already done');
     }
-   
+
 
     order.receivedInGoodCondition = receivedInGoodCondition;
     order.orderRating = orderRating;
@@ -198,22 +198,23 @@ const createChatWithCoach = async (req, res) => {
     let coachId = user.coach ? user.coach._id : null; // If a coach is assigned, get their ID
 
     // If no coach assigned, create a new coach and associate with the user
+    const uniqueCoachName = `Coach_${userId}_${Date.now()}`; // Generate a unique coach name
 
-      const newCoach = new Coach({
-        coachName: 'Coach_' + userId, // You can customize the coach name
-        userId: userId,
-        isActive: true,
-      });
+    const newCoach = new Coach({
+      coachName: uniqueCoachName,
+      userId: userId,
+      isActive: true,
+    });
 
-      const savedCoach = await newCoach.save();
-      coachId = savedCoach._id;
+    const savedCoach = await newCoach.save();
+    coachId = savedCoach._id;
 
-      // Update the user document with the new coach ID
-      await User.findByIdAndUpdate(
-        userId,
-        { coach: coachId }, // Update the 'coach' field with the coachId
-        { new: true } // Return the updated document
-      ).populate('coach');
+    // Update the user document with the new coach ID
+    await User.findByIdAndUpdate(
+      userId,
+      { coach: coachId }, // Update the 'coach' field with the coachId
+      { new: true } // Return the updated document
+    ).populate('coach');
 
 
     const participants = [userId, coachId]; // Set participants to user and coach
