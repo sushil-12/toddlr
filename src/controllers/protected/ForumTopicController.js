@@ -131,10 +131,65 @@ const updateTopic = async (req, res) => {
   }
 };
 
+const actionOnTopic = async(req,res) => {
+  try {
+    const action = req.params.action;
+    const topicId = req.body.topicId
+    const token = req.headers.authorization.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+    if(!action){
+      throw new CustomError(404, 'Action is required');
+    }
+    let update = {}
+    if(action === "join"){
+      // add userId to the joinedBy array in topics collection
+      update = {
+        $addToSet:{members:{
+          joinedBy: userId,
+          joinedAt: new Date()
+        }}
+      }
+    }else if(action === "pin"){
+      // add userId to the pinnedBy array in topics collection
+      update = {
+        $addToSet:{pins:{
+          pinnedBy: userId,
+          pinnedAt: new Date()
+        }}
+      }
+    }else if(action === "like"){
+      // add userId to the likesCount array in topics collection
+      update = {
+        $addToSet:{likeCount:{
+          likedBy: userId,
+          likedAt: new Date()
+        }}
+      }
+    }else{
+      throw new CustomError(500,'Invalid Action')
+    }
+
+    //Update the topic document
+    const updatedTopic = await Topic.findByIdAndUpdate(
+      topicId, 
+      update,
+      {new: true, runValidators: true}
+    )
+    if(!updatedTopic){
+      throw new CustomError(404,'Topic not found')
+    }
+    return ResponseHandler.success(res, updatedTopic,200,"Topic updated successfully")
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+}
+
 module.exports = {
   createTopic,
   getTopicsList,
   getTopicDetails,
   deleteTopic,
-  updateTopic
+  updateTopic,
+  actionOnTopic
 };

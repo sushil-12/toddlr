@@ -11,7 +11,7 @@ const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrCo
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus } = require('../controllers/protected/ProductController');
 const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController');
 const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2 } = require('../controllers/protected/NewPaymentController');
-const { createTopic, getTopicDetails, getTopicsList, deleteTopic, updateTopic } = require('../controllers/protected/ForumTopicController');
+const { createTopic, getTopicDetails, getTopicsList, deleteTopic, updateTopic, actionOnTopic } = require('../controllers/protected/ForumTopicController');
 const router = express.Router();
 
 // Apply the token verification middleware to all routes in this router
@@ -105,6 +105,6 @@ router.get('/topic/get-topic/:id', getTopicDetails);
 router.get('/topic/get-topics-list', getTopicsList);
 router.delete('/topic/delete-post/:id', deleteTopic);
 router.put('/topic/update-topic/:id', updateTopic)
-
+router.put('/topic/perform-action/:action', actionOnTopic)
 
 module.exports = router;
