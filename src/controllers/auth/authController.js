@@ -614,6 +614,7 @@ const login = async (req, res) => {
 
     const bundleId = bundle?._id;
     const cartCount = bundle?.products.length;
+    let message = "";
     
     const userProfile = {
       _id: userData._id,
@@ -634,7 +635,12 @@ const login = async (req, res) => {
       followers: userData?.followers
 
     };
-    ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message: "Welocme Back!" }, HTTP_STATUS_CODES.OK);
+    if( userData?.isOnBoardingComplete){
+      message = `Welcome Back ${userData.username} !`
+    }else{
+      message= 'Welcome'
+    }
+    ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message: message }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
