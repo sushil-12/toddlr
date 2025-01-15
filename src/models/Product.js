@@ -61,7 +61,7 @@ const productSchema = new mongoose.Schema({
     },
     condition: {
         type: String,
-        enum: ["new", "as_good_as_new", "used"],
+        // enum: ["new", "as_good_as_new", "used"],
         required: true,
     },
     occasion: {
