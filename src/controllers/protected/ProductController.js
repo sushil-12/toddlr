@@ -130,13 +130,19 @@ const addProductToWishlist = async (req, res) => {
 
     // Check if the product is already in the user's wishlist
     if (user.wishlist.includes(productId)) {
+      // Remove the productId from the wishlist array
+      user.wishlist = user.wishlist.filter(id => id.toString() !== productId.toString());
+  
+      // Save the updated user
+      await user.save();
+  
       return ResponseHandler.success(
-        res,
-        null,
-        200,
-        "Product is already in the wishlist",
+          res,
+          null,
+          200,
+          "Product removed from wishlist"
       );
-    }
+  }
 
     // Add the product to the user's wishlist
     user.wishlist.push(productId);
