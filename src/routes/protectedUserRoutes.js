@@ -8,7 +8,7 @@ const { createEditCategory, getAllCategories, getCategoryById } = require('../co
 const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCustomField } = require('../controllers/protected/CustomFieldTemplateController');
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
-const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus } = require('../controllers/protected/ProductController');
+const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus, addProductToWishlist } = require('../controllers/protected/ProductController');
 const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController');
 const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2 } = require('../controllers/protected/NewPaymentController');
 const { createTopic, getTopicDetails, getTopicsList, deleteTopic, updateTopic, actionOnTopic } = require('../controllers/protected/ForumTopicController');
@@ -44,6 +44,7 @@ router.post('/add-update-product/:id?', createAndUpdateProduct)
 router.get('/list-all-products', getProducts);
 router.get('/get-product-details/:id', getProductDetails);
 router.put('/reserve-product/:id?', updateProductStatus)
+router.put('/add-product-to-wishlist/:id?', addProductToWishlist)
 
 router.post('/product/:productId/make-offer', makeAnOffer);
 router.put('/product/update-offer/:offerId', updateOffer);

@@ -80,6 +80,10 @@ const productSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    wishlisted: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 productSchema.plugin(mongoosePaginate);
