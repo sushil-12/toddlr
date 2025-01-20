@@ -13,12 +13,12 @@ class CustomError extends Error {
 module.exports = CustomError;
 
 class ResponseHandler {
-  static success(res, data = null, code = 200) {
+  static success(res, data = null, code = 200, message="Response fetched sucessfuly!") {
     res.status(200).json({
       code: code,
       status: 'success',
       data,
-      message: data?.message || data?.message !== undefined ? data.message : 'Response fetched sucessfuly!'
+      message: data?.message || data?.message !== undefined ? data.message : message
     });
   }
 
