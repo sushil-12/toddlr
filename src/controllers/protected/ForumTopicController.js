@@ -185,11 +185,67 @@ const actionOnTopic = async(req,res) => {
   }
 }
 
+const addCommentsOnTopic = async (req, res) => {
+  try {
+    const { topicId, comment, parentCommentId } = req.body;
+    const token = req.headers.authorization.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    // Fetch the topic
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      throw new CustomError(404, "Topic not found");
+    }
+
+    // If `parentCommentId` is provided, handle adding a reply
+    if (parentCommentId) {
+      const parentComment = topic.comments.id(parentCommentId); // Locate the parent comment
+      if (!parentComment) {
+        throw new CustomError(404, "Parent comment not found");
+      }
+
+      // Create a new reply object
+      const newReply = {
+        repliedBy: userId,
+        reply: comment, // Use the `comment` field for the reply content
+        repliedAt: new Date(),
+      };
+
+      // Push the reply into the replies array of the parent comment
+      parentComment.replies.push(newReply);
+    } else {
+      // Handle adding a new comment
+      const newComment = {
+        commentedBy: userId,
+        comment: comment,
+        commentedAt: new Date(),
+      };
+
+      // Push the comment into the topic's comments array
+      topic.comments.push(newComment);
+    }
+
+    // Save the updated topic
+    await topic.save();
+
+    return ResponseHandler.success(
+      res,
+      topic,
+      200,
+      parentCommentId ? "Reply added successfully" : "Comment added successfully"
+    );
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 module.exports = {
   createTopic,
   getTopicsList,
   getTopicDetails,
   deleteTopic,
+  addCommentsOnTopic,
   updateTopic,
   actionOnTopic
 };

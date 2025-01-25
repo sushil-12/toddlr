@@ -2,10 +2,8 @@ const http = require('http'); // Import HTTP to create a server
 const { Server } = require('socket.io'); // Import Socket.io
 const app = require('./app'); // Import your Express app
 require('dotenv').config();
-const tls = require('tls');
 const Chat = require('./models/Chat');
 const Offer = require('./models/Offer');
-console.log(tls.TLSSocket.listenerCount('close'));
 
 const PORT = process.env.PORT || 3000;
 

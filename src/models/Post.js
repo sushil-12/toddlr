@@ -1,26 +1,86 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const postSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    post_type: { type: String, required: true },
-    domain: { type: String, required: true },
-    slug: { type: String },
-    content: { type: String, required: true },
-    author: { type: String, required: true },
-    publicationDate: { type: Date, default: Date.now },
-    categories: { type: [String], default: [] },
-    tags: { type: [String], default: [] },
-
-    featuredImage: { type: String },
-    status: { type: String, enum: ['draft', 'published', 'archived', 'trash'], default: 'draft' },
-    comments: [{ user: String, content: String, date: { type: Date, default: Date.now } }],
-    postMeta: { type: mongoose.Schema.Types.ObjectId, ref: 'PostMeta' },
-    seoData: { type: Object, default: {}  },
-    deleted: { type: Boolean, default: false }, // Soft delete indicator
-    isSeoDefault: { type: Boolean, default: false }, // Soft delete indicator
-    sticky: { type: Boolean, default: false } // Soft delete indicator
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    title: {
+        type: String,
+        required: function() {
+            return this.postType === 'topic' || this.postType === 'story' || this.postType === 'post';
+        },
+        trim: true,
+    },
+    message: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    category: {
+        type: String,
+    },
+    tag: {
+        type: String,
+    },
+    pins: [
+        {
+            pinnedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User', 
+                required: true,
+            },
+            pinnedAt: {
+                type: Date,
+                default: Date.now, 
+            }
+        }
+    ],
+    postType: {
+        type: String,
+        enum: ["sell_an_item", "story", "post", "topic"],
+        required: true,
+        default: 'post'
+    },
+    members: [
+        {
+            joinedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User', 
+                required: true,
+            },
+            joinedAt: {
+                type: Date,
+                default: Date.now, 
+            }
+        }
+    ],
+    likes: [
+        {
+            likedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User', 
+                required: true,
+            },
+            likedAt: {
+                type: Date,
+                default: Date.now,
+            }
+        }
+    ],
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
+    }
 });
 
-const Post = mongoose.model('Post', postSchema);
+postSchema.plugin(mongoosePaginate);
 
+const Post = mongoose.model("Post", postSchema);
 module.exports = Post;

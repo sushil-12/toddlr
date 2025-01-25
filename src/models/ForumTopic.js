@@ -43,6 +43,7 @@ const forumTopicSchema = new mongoose.Schema({
     postType: {
         type: String,
         enum: ["sell_an_item","story","post","topic"],
+        default: "topic",
         required: true,
     },
     members: [
@@ -69,6 +70,42 @@ const forumTopicSchema = new mongoose.Schema({
                 type: Date,
                 default: Date.now,
             }
+        }
+    ],
+    comments: [
+        {
+            commentedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                required: true,
+            },
+            comment: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            commentedAt: {
+                type: Date,
+                default: Date.now,
+            },
+            replies: [
+                {
+                    repliedBy: {
+                        type: mongoose.Schema.Types.ObjectId,
+                        ref: 'User',
+                        required: true,
+                    },
+                    reply: {
+                        type: String,
+                        required: true,
+                        trim: true,
+                    },
+                    repliedAt: {
+                        type: Date,
+                        default: Date.now,
+                    }
+                }
+            ]
         }
     ],
     createdAt: {
