@@ -446,6 +446,42 @@ const getBookmarkedMessages = async (req, res) => {
   }
 };
 
+const deleteBookmarkedMessage = async (req, res) => {
+  const { chatId, messageId } = req.body;
+
+  try {
+    // Find the chat document by ID
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      throw new CustomError(404, "Chat not found");
+    }
+
+    // Find the specific message by ID
+    const message = chat.messages.id(messageId);
+    if (!message) {
+      throw new CustomError(404, "Message not found");
+    }
+
+    // Check if the message is bookmarked
+    if (!message.bookmarked) {
+      throw new CustomError(400, "Message is not bookmarked");
+    }
+
+    // Remove the bookmark
+    message.bookmarked = false;
+    message.bookmarkedAt = null; // Clear the timestamp
+
+    // Save the updated chat document
+    await chat.save();
+
+    // Send a success response
+    ResponseHandler.success(res, { message: "Bookmark removed successfully" }, 200);
+  } catch (error) {
+    // Handle any errors
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 module.exports = {
   bookmarkMessage,
   getBookmarkedMessages,
@@ -454,6 +490,6 @@ module.exports = {
   sendMessage,
   getMessages,
   getUserChats,
-  ChatWithToddlerProfile,
+  ChatWithToddlerProfile,deleteBookmarkedMessage,
   deleteChat,
 };
