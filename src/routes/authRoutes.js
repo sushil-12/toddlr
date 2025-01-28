@@ -22,6 +22,7 @@ const router = express.Router();
 router.post('/register', authController.register);
 router.post('/resend-verification-link', authController.resendVerificationEmail);
 router.post('/login', authController.login);
+router.post('/verify_token', authController.verifyToken);
 router.post('/social/login', authController.socialLogin);
 router.post('/reset-password', authController.resetPassword);
 router.post('/update-profile', authController.editProfile);

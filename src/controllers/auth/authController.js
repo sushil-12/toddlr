@@ -99,7 +99,7 @@ const register = async (req, res) => {
   try {
     // Validate the registration details
     AuthValidator.validateRegistration(req.body);
-    const { username, password, email, phoneNumber, privacyPolicyAccepted, termsAndConditionAccepted } = req.body;
+    const { username, password, email, phoneNumber, firstName, lastName, privacyPolicyAccepted, termsAndConditionAccepted } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Check if a user with the same email exists
@@ -117,6 +117,8 @@ const register = async (req, res) => {
     // Create a new user instance with `isEmailVerified` initially set to `false`
     const newUser = new User({
       username,
+      firstName,
+      lastName,
       password: hashedPassword,
       email,
       phoneNumber,
@@ -127,7 +129,7 @@ const register = async (req, res) => {
 
     // Save the new user in the database
     const customer = await createCustomer(username, email);
-    
+
     newUser.customerID = customer.id;
 
     await newUser.save();
@@ -244,7 +246,7 @@ const socialLogin = async (req, res) => {
           createdBy: existingUser._id,
           status: { $ne: 'executed' }
         });
-    
+
         const bundleId = bundle?._id;
         const cartCount = bundle?.products.length;
 
@@ -262,7 +264,7 @@ const socialLogin = async (req, res) => {
           isOnBoardingComplete: existingUser?.isOnBoardingComplete,
           firstTimeToddlerAddCompleted: existingUser?.firstTimeToddlerAddCompleted,
           temp_email: existingUser?.temp_email,
-          followers: existingUser?.followers,bundleId, cartCount
+          followers: existingUser?.followers, bundleId, cartCount
 
         };
 
@@ -295,7 +297,7 @@ const socialLogin = async (req, res) => {
         createdBy: existingSocialLoginId._id,
         status: { $ne: 'executed' }
       });
-  
+
       const bundleId = bundle?._id;
       const cartCount = bundle?.products.length;
       const userProfile = {
@@ -367,7 +369,7 @@ const socialLogin = async (req, res) => {
         createdBy: user._id,
         status: { $ne: 'executed' }
       });
-  
+
       const bundleId = bundle?._id;
       const cartCount = bundle?.products.length;
 
@@ -423,7 +425,7 @@ const socialLogin = async (req, res) => {
         createdBy: user._id,
         status: { $ne: 'executed' }
       });
-  
+
       const bundleId = bundle?._id;
       const cartCount = bundle?.products.length;
 
@@ -477,6 +479,7 @@ const login = async (req, res) => {
     if (email) {
       conditions.push({ email });
     }
+
 
     let user;
     if (form_type == "forgot_password_form") {
@@ -615,7 +618,7 @@ const login = async (req, res) => {
     const bundleId = bundle?._id;
     const cartCount = bundle?.products.length;
     let message = "";
-    
+
     const userProfile = {
       _id: userData._id,
       username: userData.username,
@@ -635,12 +638,64 @@ const login = async (req, res) => {
       followers: userData?.followers
 
     };
-    if( userData?.isOnBoardingComplete){
+    if (userData?.isOnBoardingComplete) {
       message = `Welcome Back ${userData.username} !`
-    }else{
-      message= 'Welcome'
+    } else {
+      message = 'Welcome'
     }
-    ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message: message }, HTTP_STATUS_CODES.OK);
+    ResponseHandler.success(res, { api_token: token, token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message: message }, HTTP_STATUS_CODES.OK);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+const verifyToken = async (req, res) => {
+  try {
+    const { api_token } = req.body;
+
+    if (!api_token) {
+      return ResponseHandler.error(res, 'Token is required', HTTP_STATUS_CODES.BAD_REQUEST);
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(api_token, process.env.JWT_SECRET);
+
+    // Find the user based on the token's userId
+    const user = await User.findById(decoded.userId).populate('role');
+
+    if (!user) {
+      return ResponseHandler.error(res, 'User not found', HTTP_STATUS_CODES.NOT_FOUND);
+    }
+
+    const bundle = await Bundle.findOne({
+      createdBy: user._id,
+      status: { $ne: 'executed' }
+    });
+
+    const bundleId = bundle?._id;
+    const cartCount = bundle?.products.length;
+
+    const userProfile = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      bio: user.bio,
+      profile_pic: user.profile_pic,
+      lastName: user.lastName,
+      role: user.role?.name,
+      permissions: user.permissions,
+      isEmailVerified: user?.isEmailVerified,
+      isOnBoardingComplete: user?.isOnBoardingComplete,
+      firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
+      temp_email: user?.temp_email,
+      bundleId,
+      cartCount,
+      followers: user?.followers
+    };
+
+    // Respond with user details
+    ResponseHandler.success(res, { user: userProfile }, HTTP_STATUS_CODES.OK);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
@@ -792,6 +847,7 @@ module.exports = {
   resetPassword,
   resendVerificationEmail,
   checkUsernameExists,
+  verifyToken,
   checkEmailExists,
   generateRandomString
 };
