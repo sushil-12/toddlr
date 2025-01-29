@@ -93,9 +93,10 @@ const getTopicDetails = async (req, res) => {
       0
     );
 
+    const transformedTopic = {...topic.toObject(), commentCount};
     return ResponseHandler.success(
       res,
-      { topic, commentCount }, // Include commentCount in the response
+      {...topic.toObject(), commentCount}, // Include commentCount in the response
       200,
       "Topic details retrieved successfully"
     );
