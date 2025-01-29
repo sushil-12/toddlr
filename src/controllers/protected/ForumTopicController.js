@@ -146,59 +146,57 @@ const updateTopic = async (req, res) => {
   }
 };
 
-const actionOnTopic = async(req,res) => {
+const actionOnTopic = async (req, res) => {
   try {
     const action = req.params.action;
-    const topicId = req.body.topicId
+    const topicId = req.body.topicId;
     const token = req.headers.authorization.split(" ")[1];
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decodedToken.userId;
-    if(!action){
-      throw new CustomError(404, 'Action is required');
-    }
-    let update = {}
-    if(action === "join"){
-      // add userId to the joinedBy array in topics collection
-      update = {
-        $addToSet:{members:{
-          joinedBy: userId,
-          joinedAt: new Date()
-        }}
-      }
-    }else if(action === "pin"){
-      // add userId to the pinnedBy array in topics collection
-      update = {
-        $addToSet:{pins:{
-          pinnedBy: userId,
-          pinnedAt: new Date()
-        }}
-      }
-    }else if(action === "like"){
-      // add userId to the likesCount array in topics collection
-      update = {
-        $addToSet:{likeCount:{
-          likedBy: userId,
-          likedAt: new Date()
-        }}
-      }
-    }else{
-      throw new CustomError(500,'Invalid Action')
+
+    if (!action) {
+      throw new CustomError(400, "Action is required");
     }
 
-    //Update the topic document
-    const updatedTopic = await Topic.findByIdAndUpdate(
-      topicId, 
-      update,
-      {new: true, runValidators: true}
-    )
-    if(!updatedTopic){
-      throw new CustomError(404,'Topic not found')
+    let update = {};
+
+    // Fetch the topic first to check if the user has already performed the action
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      throw new CustomError(404, "Topic not found");
     }
-    return ResponseHandler.success(res, updatedTopic,200,"Topic updated successfully")
+
+    if (action === "join") {
+      const isMember = topic.members.some((member) => member.joinedBy.toString() === userId);
+      update = isMember
+        ? { $pull: { members: { joinedBy: userId } } } // Remove user if already joined
+        : { $addToSet: { members: { joinedBy: userId, joinedAt: new Date() } } }; // Add user if not joined
+    } else if (action === "pin") {
+      const isPinned = topic.pins.some((pin) => pin.pinnedBy.toString() === userId);
+      update = isPinned
+        ? { $pull: { pins: { pinnedBy: userId } } } // Remove pin if already pinned
+        : { $addToSet: { pins: { pinnedBy: userId, pinnedAt: new Date() } } }; // Pin if not pinned
+    } else if (action === "like") {
+      const isLiked = topic.likeCount.some((like) => like.likedBy.toString() === userId);
+      update = isLiked
+        ? { $pull: { likeCount: { likedBy: userId } } } // Remove like if already liked
+        : { $addToSet: { likeCount: { likedBy: userId, likedAt: new Date() } } }; // Like if not liked
+    } else {
+      throw new CustomError(400, "Invalid Action");
+    }
+
+    // Update the topic document
+    const updatedTopic = await Topic.findByIdAndUpdate(topicId, update, { new: true, runValidators: true });
+
+    if (!updatedTopic) {
+      throw new CustomError(404, "Topic not found");
+    }
+
+    return ResponseHandler.success(res, updatedTopic, 200, `Action '${action}' toggled successfully`);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
-}
+};
 
 const addCommentsOnTopic = async (req, res) => {
   try {
