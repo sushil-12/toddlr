@@ -79,18 +79,25 @@ const getTopicsList = async (req, res) => {
 const getTopicDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const topic = await Topic.findOne({
-      _id: id, // Match by the provided ID
-    });
+
+    // Fetch the topic
+    const topic = await Topic.findById(id).populate("createdBy", "name email"); // Example: Populating the user details
+
     if (!topic) {
       return ResponseHandler.error(res, null, 404, "Topic not found");
     }
 
+    // Calculate total comments (including replies)
+    const commentCount = (topic.comments || []).reduce(
+      (count, comment) => count + 1 + (comment.replies?.length || 0),
+      0
+    );
+
     return ResponseHandler.success(
       res,
-      topic,
+      { topic, commentCount }, // Include commentCount in the response
       200,
-      "Topic details retrieved successfully",
+      "Topic details retrieved successfully"
     );
   } catch (error) {
     console.error(error);
