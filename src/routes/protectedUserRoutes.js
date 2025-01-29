@@ -107,7 +107,9 @@ router.get('/topic/get-topics-list', getTopicsList);
 router.delete('/topic/delete-post/:id', deleteTopic);
 router.put('/topic/update-topic/:id', updateTopic)
 router.put('/topic/add-comment', addCommentsOnTopic);
-router.put("/topic/like-comment", likeComment);
+router.put('/topic/perform-action/{action}', actionOnTopic);
+
+router.post("/topic/like-comment", likeComment);
 
 
 module.exports = router;
