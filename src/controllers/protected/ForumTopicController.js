@@ -46,7 +46,8 @@ const getTopicsList = async (req, res) => {
     const userId = decodedToken.userId;
 
     // Query for fetching all topics
-    const topics = await Topic.find({ deletedAt: null });
+    const topics = await Topic.find({ deletedAt: null })   .populate("createdBy", "username email profile_pic")
+    .populate("comments.commentedBy", "username email profile_pic");
 
     // Transform topics to include commentCount and exclude comments
     const transformedTopics = topics.map(topic => {
@@ -80,8 +81,10 @@ const getTopicDetails = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Fetch the topic
-    const topic = await Topic.findById(id).populate("createdBy", "name email"); // Example: Populating the user details
+    // Fetch the topic and populate createdBy and comments.commentedBy
+    const topic = await Topic.findById(id)
+      .populate("createdBy", "username email profile_pic")
+      .populate("comments.commentedBy", "username email profile_pic");
 
     if (!topic) {
       return ResponseHandler.error(res, null, 404, "Topic not found");
@@ -93,10 +96,10 @@ const getTopicDetails = async (req, res) => {
       0
     );
 
-    const transformedTopic = {...topic.toObject(), commentCount};
+    const transformedTopic = { ...topic.toObject(), commentCount };
     return ResponseHandler.success(
       res,
-      {...topic.toObject(), commentCount}, // Include commentCount in the response
+      transformedTopic, // Include commentCount in the response
       200,
       "Topic details retrieved successfully"
     );
