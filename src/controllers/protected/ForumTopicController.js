@@ -46,12 +46,27 @@ const getTopicsList = async (req, res) => {
     const userId = decodedToken.userId;
 
     // Query for fetching all topics
-    const topics = await Topic.find().where({deletedAt:null});
+    const topics = await Topic.find({ deletedAt: null });
 
-    // Respond with the filtered bundles
+    // Transform topics to include commentCount and exclude comments
+    const transformedTopics = topics.map(topic => {
+      let commentCount = 0;
+      topic.comments.forEach(comment => {
+        commentCount += 1 + (comment.replies ? comment.replies.length : 0);
+      });
+
+      // Create a new object excluding the comments array
+      const { ...topicData } = topic.toObject();
+      return {
+        ...topicData,
+        commentCount, // Add commentCount to the response
+      };
+    });
+
+    // Respond with the transformed topics
     return ResponseHandler.success(
       res,
-      topics,
+      transformedTopics,
       200,
       "Topics retrieved successfully",
     );
@@ -240,8 +255,66 @@ const addCommentsOnTopic = async (req, res) => {
   }
 };
 
+const likeComment = async (req, res) => {
+  try {
+    const { topicId, commentId, replyId } = req.body;
+    const token = req.headers.authorization.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    // Fetch the topic
+    const topic = await Topic.findById(topicId);
+    if (!topic) {
+      throw new CustomError(404, "Topic not found");
+    }
+
+    let comment;
+    
+    if (replyId) {
+      // Find the parent comment
+      const parentComment = topic.comments.id(commentId);
+      if (!parentComment) {
+        throw new CustomError(404, "Comment not found");
+      }
+      // Find the reply
+      comment = parentComment.replies.id(replyId);
+    } else {
+      // Handle liking/unliking a main comment
+      comment = topic.comments.id(commentId);
+    }
+
+    if (!comment) {
+      throw new CustomError(404, "Comment/Reply not found");
+    }
+
+    // Check if user has already liked
+    const alreadyLiked = comment.likes.includes(userId);
+    if (alreadyLiked) {
+      // Unlike
+      comment.likes.pull(userId);
+    } else {
+      // Like
+      comment.likes.push(userId);
+    }
+
+    // Save the topic with updated comment/reply
+    await topic.save();
+
+    return ResponseHandler.success(
+      res,
+      topic,
+      200,
+      alreadyLiked ? "Like removed" : "Like added"
+    );
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+
 module.exports = {
   createTopic,
+  likeComment,
   getTopicsList,
   getTopicDetails,
   deleteTopic,

@@ -4,7 +4,7 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 const forumTopicSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',  // assuming there's a Parent model
+        ref: 'User',
         required: true,
     },
     title: {
@@ -59,14 +59,14 @@ const forumTopicSchema = new mongoose.Schema({
             }
         }
     ],
-    likeCount:[
+    likeCount: [
         {
             likedBy: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'User', 
                 required: true,
             },
-            likedAt:{
+            likedAt: {
                 type: Date,
                 default: Date.now,
             }
@@ -88,6 +88,10 @@ const forumTopicSchema = new mongoose.Schema({
                 type: Date,
                 default: Date.now,
             },
+            likes: [{  // **Likes array for comments**
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+            }],
             replies: [
                 {
                     repliedBy: {
@@ -103,7 +107,11 @@ const forumTopicSchema = new mongoose.Schema({
                     repliedAt: {
                         type: Date,
                         default: Date.now,
-                    }
+                    },
+                    likes: [{  // **Likes array for replies**
+                        type: mongoose.Schema.Types.ObjectId,
+                        ref: 'User',
+                    }],
                 }
             ]
         }
