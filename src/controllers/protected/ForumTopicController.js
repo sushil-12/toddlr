@@ -47,7 +47,7 @@ const getTopicsList = async (req, res) => {
 
     // Query for fetching all topics
     const topics = await Topic.find({ deletedAt: null })   .populate("createdBy", "username email profile_pic")
-    .populate("comments.commentedBy", "username email profile_pic");
+    .populate("comments.commentedBy", "username email profile_pic") .populate("comments.replies.repliedBy", "username email profile_pic");
 
     // Transform topics to include commentCount and exclude comments
     const transformedTopics = topics.map(topic => {
@@ -84,7 +84,8 @@ const getTopicDetails = async (req, res) => {
     // Fetch the topic and populate createdBy and comments.commentedBy
     const topic = await Topic.findById(id)
       .populate("createdBy", "username email profile_pic")
-      .populate("comments.commentedBy", "username email profile_pic");
+      .populate("comments.commentedBy", "username email profile_pic")
+      .populate("comments.replies.repliedBy", "username email profile_pic");
 
     if (!topic) {
       return ResponseHandler.error(res, null, 404, "Topic not found");
