@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const Payment = require("../../models/Payment");
 const { createMollieClient } = require('@mollie/api-client');
 const User = require("../../models/User");
+const Order = require("../../models/Order");
 
 
 const mollieClient = createMollieClient({ apiKey: `${process.env.MOLLIE_API_KEY}` });
@@ -152,6 +153,31 @@ const getPaymentStatus = async (req, res) => {
     } catch (error) {
         return ResponseHandler.error(res, 500, "Unable to fetch details")
     }
+
+}
+
+const getOrdersListByType = async (req,res) => {
+    const type  = req.params.type
+    // Extract the userId from the request token (assuming authentication middleware)
+    const token = req.headers.authorization?.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+    let orders = []
+    if(type === "bought"){
+        // find orders in which buyerId is userId
+        orders = await Order.find({ createdBy: userId }).populate("productId");
+    }else if ( type === "sold"){
+        // find  orders in which product's createdBy is same as userId 
+        orders = await Order.find().populate({
+            path: "productId",
+            match: { createdBy: userId } // Filter products created by the user
+        });
+    }else{
+        ErrorHandler.handleError(error, res,"Invalid order type");
+
+    }
+
+    return ResponseHandler.success(res,orders,200,"Data fetched successfully")
 
 }
 

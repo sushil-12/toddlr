@@ -48,7 +48,7 @@ const getTopicsList = async (req, res) => {
     const userId = decodedToken.userId;
 
     // Query for fetching all topics
-    const topics = await Topic.find({ deletedAt: null })   .populate("createdBy", "username email profile_pic")
+    const topics = await Topic.find({ deletedAt: null }).populate("createdBy", "username email profile_pic")
     .populate("comments.commentedBy", "username email profile_pic") .populate("comments.replies.repliedBy", "username email profile_pic");
 
     // Transform topics to include commentCount and exclude comments
@@ -122,8 +122,8 @@ const deleteTopic = async (req, res) => {
     if (!topic) {
       throw new CustomError(404, "No record found");
     }
-    topic.deletedAt = Date.now();
-    await topic.save;
+    topic.deletedAt = Date.now()
+    await topic.save();
 
     ResponseHandler.success(
       res,

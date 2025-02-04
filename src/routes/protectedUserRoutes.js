@@ -110,6 +110,7 @@ router.put('/topic/add-comment', addCommentsOnTopic);
 router.put('/topic/perform-action/:action', actionOnTopic);
 
 router.post("/topic/like-comment", likeComment);
+router.post("/order/order-list/:type",)
 
 
 module.exports = router;
