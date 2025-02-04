@@ -143,7 +143,7 @@ const updateTopic = async (req, res) => {
 
     
     const updatedTopic = await Topic.findOneAndUpdate(
-      { _id: topicId, createdBy }, 
+      { _id: topicId }, 
       { $set: { title, tag, category, message } },
       { new: true, runValidators: true }, 
     );
