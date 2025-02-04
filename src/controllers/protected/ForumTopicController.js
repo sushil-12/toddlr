@@ -5,6 +5,8 @@ const {
   CustomError,
 } = require("../../utils/responseHandler");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+
 
 const createTopic = async (req, res) => {
   try {
