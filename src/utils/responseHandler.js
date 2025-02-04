@@ -21,7 +21,14 @@ class ResponseHandler {
       message: data?.message || data?.message !== undefined ? data.message : message
     });
   }
-
+  static topicSuccess(res, data = null, code = 200, message="Response fetched sucessfuly!") {
+    res.status(200).json({
+      code: code,
+      status: 'success',
+      data,
+      message: message
+    });
+  }
   static error(res, code, message, errors = []) {
     // Handle MongoDB duplicate key error
     if (code === 11000) {

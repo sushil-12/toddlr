@@ -65,7 +65,7 @@ const getTopicsList = async (req, res) => {
     });
 
     // Respond with the transformed topics
-    return ResponseHandler.success(
+    return ResponseHandler.topicSuccess(
       res,
       transformedTopics,
       200,
@@ -98,7 +98,7 @@ const getTopicDetails = async (req, res) => {
     );
 
     const transformedTopic = { ...topic.toObject(), commentCount };
-    return ResponseHandler.success(
+    return ResponseHandler.topicSuccess(
       res,
       transformedTopic, // Include commentCount in the response
       200,
@@ -141,17 +141,23 @@ const updateTopic = async (req, res) => {
     const createdBy = decodedToken.userId;
     const { title, tag, category, message } = req.body;
 
-    
-    const updatedTopic = await Topic.findOneAndUpdate(
-      { _id: topicId }, 
-      { $set: { title, tag, category, message } },
-      { new: true, runValidators: true }, 
-    );
-    if(!updatedTopic){
-        throw new CustomError(404, 'Topic not found');
+    const topic = await Topic.findById(topicId)
+    let updatedTopic = ''
+    if(topic){
+      updatedTopic = await Topic.findOneAndUpdate(
+        { _id: topicId }, 
+        { $set: { title, tag, category, message } },
+        { new: true, runValidators: true }, 
+      );
+      if(!updatedTopic){
+          throw new CustomError(500, 'Unable to update topic');
+      }
+    }else{
+      throw new CustomError(404, 'Topic not found');
     }
+    
 
-    return ResponseHandler.success(res, updatedTopic,200,"Topic updated successfully")
+    return ResponseHandler.topicSuccess(res, updatedTopic,200,"Topic updated successfully")
 
   } catch (error) {
     ErrorHandler.handleError(error, res);
