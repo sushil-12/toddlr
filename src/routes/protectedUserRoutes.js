@@ -10,7 +10,7 @@ const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, de
 const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus, addProductToWishlist } = require('../controllers/protected/ProductController');
 const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController');
-const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2 } = require('../controllers/protected/NewPaymentController');
+const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2, getOrdersListByType, getOrderDetails } = require('../controllers/protected/NewPaymentController');
 const { createTopic, getTopicDetails, getTopicsList, deleteTopic, updateTopic, actionOnTopic, addCommentsOnTopic, likeComment } = require('../controllers/protected/ForumTopicController');
 const router = express.Router();
 
@@ -110,7 +110,9 @@ router.put('/topic/add-comment', addCommentsOnTopic);
 router.put('/topic/perform-action/:action', actionOnTopic);
 
 router.post("/topic/like-comment", likeComment);
-router.post("/order/order-list/:type",)
+router.get("/order/order-list/:type",getOrdersListByType);
+router.get("/order/order-detail/:id",getOrderDetails)
+
 
 
 module.exports = router;

@@ -173,7 +173,7 @@ const getOrdersListByType = async (req,res) => {
             match: { createdBy: userId } // Filter products created by the user
         });
     }else{
-        ErrorHandler.handleError(error, res,"Invalid order type");
+      return  ErrorHandler.handleError(error, res,"Invalid order type");
 
     }
 
@@ -181,9 +181,33 @@ const getOrdersListByType = async (req,res) => {
 
 }
 
+
+const getOrderDetails = async(req,res) => {
+    const orderId = req.params.id
+    // Extract the userId from the request token (assuming authentication middleware)
+    const token = req.headers.authorization?.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    const order = await Order.findById(orderId).populate({
+        path: "productId",
+        populate:{
+            path: "createdBy"
+        }
+    })
+
+    if(order){
+        return ResponseHandler.success(res,order,200,"Order details fetched successfully")
+    }else{
+       return ErrorHandler.handleError(error, res,"Order Not Found");
+    }
+}
+
 module.exports = {
     createMolliePayment,
     createMolliePaymentV2,
     addFunds,
-    getPaymentStatus
+    getPaymentStatus,
+    getOrdersListByType,
+    getOrderDetails
 };
