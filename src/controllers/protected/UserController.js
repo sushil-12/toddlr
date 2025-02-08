@@ -164,6 +164,7 @@ const getProfile = async (req, res) => {
       email: user.email,
       firstName: user.firstName,
       bio: user.bio,
+      gender,
       birthDate: user.birthDate || null,
       profile_pic: user.profile_pic,
       lastName: user.lastName,
@@ -626,7 +627,7 @@ const editUserProfile = async (req, res) => {
     const userId = decodedToken.userId;
 
     // Extract fields from the request body
-    const { username, email, firstName, lastName, bio, profile_pic, temp_email, isOnBoardingComplete, birthDate } = req.body;
+    const { username, email, firstName, lastName, bio, profile_pic, temp_email, isOnBoardingComplete, birthDate, gender } = req.body;
 
     // Find the user by ID
     const user = await User.findById(userId);
@@ -643,6 +644,7 @@ const editUserProfile = async (req, res) => {
     if (profile_pic) user.profile_pic = profile_pic;
     if (temp_email) user.temp_email = temp_email;
     if (birthDate) user.birthDate = birthDate;
+    if (gender) user.gender = gender;
     if (isOnBoardingComplete) user.isOnBoardingComplete = isOnBoardingComplete;
 
 
@@ -672,6 +674,7 @@ const editUserProfile = async (req, res) => {
       email: user.email,
       firstName: user.firstName,
       bio: user.bio,
+      gender,
       profile_pic: user.profile_pic,
       lastName: user.lastName,
       role: user.role?.name,

@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
   bio: { type: String, default: '' },
+  gender: {
+    type: String,
+    enum: ['boy', 'girl', 'other', 'prefer_not_to_say'],
+    default: 'prefer_not_to_say'
+  },
   coach: { type: mongoose.Schema.Types.ObjectId, ref: 'Coach' },
   role: {
     type: String,
