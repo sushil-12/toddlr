@@ -18,6 +18,7 @@ const Website = require('../../models/Websites');
 const Coach = require('../../models/Coach');
 const Chat = require('../../models/Chat');
 const Order = require('../../models/Order');
+const Toddler = require('../../models/Toddler');
 
 
 const defaultSidebarJson = {
@@ -156,7 +157,7 @@ const getProfile = async (req, res) => {
       throw new CustomError(404, 'User not found');
     }
 
-
+    const toddlers = await Toddler.find({ parentId: user._id });
     const userProfile = {
       _id: user._id,
       username: user.username,
@@ -171,7 +172,8 @@ const getProfile = async (req, res) => {
       isOnBoardingComplete: user?.isOnBoardingComplete,
       firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
       temp_email: user?.temp_email,
-      followers: user?.followers
+      followers: user?.followers,
+      toddlers
 
     };
     console.log("USER TEMP EMAIL", user?.temp_email)
@@ -623,7 +625,7 @@ const editUserProfile = async (req, res) => {
     const userId = decodedToken.userId;
 
     // Extract fields from the request body
-    const { username, email, firstName, lastName, bio, profile_pic, temp_email, isOnBoardingComplete } = req.body;
+    const { username, email, firstName, lastName, bio, profile_pic, temp_email, isOnBoardingComplete, birthDate } = req.body;
 
     // Find the user by ID
     const user = await User.findById(userId);
@@ -639,6 +641,7 @@ const editUserProfile = async (req, res) => {
     if (bio) user.bio = bio;
     if (profile_pic) user.profile_pic = profile_pic;
     if (temp_email) user.temp_email = temp_email;
+    if (birthDate) user.birthDate = birthDate;
     if (isOnBoardingComplete) user.isOnBoardingComplete = isOnBoardingComplete;
 
 

@@ -16,8 +16,8 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String },
   bio: { type: String },
   coach: { type: mongoose.Schema.Types.ObjectId, ref: 'Coach' },
-  role: { 
-    type: String, 
+  role: {
+    type: String,
     enum: ['user', 'admin', 'superadmin'], // Define allowed roles
     default: 'user' // Set default role to 'user'
   },
@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
   resetToken: { type: String },
   customerID: { type: String },
   otpExpiry: { type: Date },
+  birthDate: {
+    type: Date,
+    default: null,
+  },
   resetTokenExpiry: { type: Date },
   walletBalance: { type: Number, default: 0 },
   verificationLinkExpiryTime: { type: Date },
