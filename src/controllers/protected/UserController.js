@@ -164,7 +164,7 @@ const getProfile = async (req, res) => {
       email: user.email,
       firstName: user.firstName,
       bio: user.bio,
-      gender,
+      gender: user.gender,
       birthDate: user.birthDate || null,
       profile_pic: user.profile_pic,
       lastName: user.lastName,
