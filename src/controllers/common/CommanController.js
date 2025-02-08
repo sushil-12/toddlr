@@ -11,6 +11,8 @@ const Offer = require("../../models/Offer");
 const { default: OpenAI } = require("openai");
 const { chat } = require("googleapis/build/src/apis/chat");
 const { isCancel } = require("axios");
+const User = require("../../models/User");
+const Product = require("../../models/Product");
 
 // Function to validate the input fields for contact
 const validateContactDetails = (fname, email, message, subject) => {
@@ -346,7 +348,7 @@ const ChatWithToddlerProfile = async (req, res) => {
       const requestMessage = {
         sender: senderId,
         chatCreatedBy: senderId,
-        isCoachChat:true,
+        isCoachChat: true,
         toddler: toddler_id,
         content: question,
         timestamp: new Date(),
@@ -484,33 +486,54 @@ const deleteBookmarkedMessage = async (req, res) => {
 
 
 const searchForAnything = async (req, res) => {
-  const { searchString } = req.body;
+  const { search } = req.body;
 
-  if (!searchString || searchString.trim() === "") {
-    throw new CustomError(400, "Search string is required");
+
+  if (!search || search.trim() === "") {
+    return ResponseHandler.error(res, 404, "Search string cannot be empty" );
   }
+  if (search.length < 3) {
+    return ResponseHandler.error(res, 404,  "Search string must be at least 3 characters long");
+  }
+
 
   try {
     // Search in Chat collection
     const chatResults = await Chat.find({
       $or: [
-        { "messages.content": { $regex: searchString, $options: "i" } },
-        { "participants.username": { $regex: searchString, $options: "i" } },
+        { "messages.content": { $regex: search, $options: "i" } },
+        { "participants.username": { $regex: search, $options: "i" } },
       ],
     }).populate("participants", "username email");
 
     // Search in Offer collection
     const offerResults = await Offer.find({
       $or: [
-        { "product.title": { $regex: searchString, $options: "i" } },
-        { "product.description": { $regex: searchString, $options: "i" } },
+        { "product.title": { $regex: search, $options: "i" } },
+        { "product.description": { $regex: search, $options: "i" } },
       ],
     }).populate("product");
+
+    const userResults = await User.find({
+      $or: [
+        { username: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ],
+    }).select("username email profile_pic");
+
+    const productResults = await Product.find({
+      $or: [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ],
+    }).select("title description price images");
 
     // Combine results
     const results = {
       chats: chatResults,
       offers: offerResults,
+      users: userResults,
+      products: productResults,
     };
 
     ResponseHandler.success(res, results, 200);
@@ -527,7 +550,7 @@ module.exports = {
   sendMessage,
   getMessages,
   getUserChats,
-  ChatWithToddlerProfile,deleteBookmarkedMessage,
+  ChatWithToddlerProfile, deleteBookmarkedMessage,
   deleteChat,
   searchForAnything
 };

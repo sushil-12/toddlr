@@ -81,7 +81,7 @@ class ResponseHandler {
 
 class ErrorHandler {
   static handleError(err, res) {
-    console.log(err.code)
+    console.log(err.code, "SUSHIL")
     const { code = 500, message } = err;
     // logger.error(`${code} - ${message}`); // Log error message
     let errorMessage = message;
