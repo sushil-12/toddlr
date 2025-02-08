@@ -19,12 +19,12 @@ const forumTopicSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ["clothes", "toys", "care", "books", "outdoor"],
+        // enum: ["clothes", "toys", "care", "books", "outdoor"],
         required: true,
     },
     tag: {
         type: String,
-        enum: ["healthcare", "nutrition", "feeding"],
+        // enum: ["healthcare", "nutrition", "feeding"],
         required: true,
     },
     pins: [

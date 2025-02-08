@@ -482,6 +482,43 @@ const deleteBookmarkedMessage = async (req, res) => {
   }
 };
 
+
+const searchForAnything = async (req, res) => {
+  const { searchString } = req.body;
+
+  if (!searchString || searchString.trim() === "") {
+    throw new CustomError(400, "Search string is required");
+  }
+
+  try {
+    // Search in Chat collection
+    const chatResults = await Chat.find({
+      $or: [
+        { "messages.content": { $regex: searchString, $options: "i" } },
+        { "participants.username": { $regex: searchString, $options: "i" } },
+      ],
+    }).populate("participants", "username email");
+
+    // Search in Offer collection
+    const offerResults = await Offer.find({
+      $or: [
+        { "product.title": { $regex: searchString, $options: "i" } },
+        { "product.description": { $regex: searchString, $options: "i" } },
+      ],
+    }).populate("product");
+
+    // Combine results
+    const results = {
+      chats: chatResults,
+      offers: offerResults,
+    };
+
+    ResponseHandler.success(res, results, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 module.exports = {
   bookmarkMessage,
   getBookmarkedMessages,
@@ -492,4 +529,5 @@ module.exports = {
   getUserChats,
   ChatWithToddlerProfile,deleteBookmarkedMessage,
   deleteChat,
+  searchForAnything
 };
