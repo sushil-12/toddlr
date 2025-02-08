@@ -649,19 +649,39 @@ const editUserProfile = async (req, res) => {
     await user.save();
 
     // Response with updated profile information
+    // const updatedUserProfile = {
+    //   id: user._id,
+    //   username: user.username,
+    //   isOnBoardingComplete: user.isOnBoardingComplete,
+    //   email: user.email,
+    //   firstName: user.firstName,
+    //   lastName: user.lastName,
+    //   bio: user.bio,
+    //   profile_pic: user.profile_pic,
+    //   temp_email: user.temp_email,
+    //   role: user.role?.name,
+    //   permissions: user?.permissions,
+    //   isEmailVerified: user?.isEmailVerified,
+    // };
+
+    const toddlers = await Toddler.find({ parentId: user._id });
     const updatedUserProfile = {
-      id: user._id,
+      _id: user._id,
       username: user.username,
-      isOnBoardingComplete: user.isOnBoardingComplete,
       email: user.email,
       firstName: user.firstName,
-      lastName: user.lastName,
       bio: user.bio,
       profile_pic: user.profile_pic,
-      temp_email: user.temp_email,
+      lastName: user.lastName,
       role: user.role?.name,
-      permissions: user?.permissions,
+      permissions: user.permissions,
       isEmailVerified: user?.isEmailVerified,
+      isOnBoardingComplete: user?.isOnBoardingComplete,
+      firstTimeToddlerAddCompleted: user?.firstTimeToddlerAddCompleted,
+      temp_email: user?.temp_email,
+      followers: user?.followers,
+      toddlers
+
     };
 
     ResponseHandler.success(res, updatedUserProfile, 200);
