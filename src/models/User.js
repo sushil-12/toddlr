@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   bio: { type: String, default: '' },
   gender: {
     type: String,
-    enum: ['boy', 'girl', 'other', 'prefer_not_to_say'],
+    enum: ['male', 'female', 'other', 'prefer_not_to_say'],
     default: 'prefer_not_to_say'
   },
   coach: { type: mongoose.Schema.Types.ObjectId, ref: 'Coach' },
