@@ -7,7 +7,7 @@ const { createEditPost, getAllPosts, getPostById, deletePost, quickEditPost, get
 const { createEditCategory, getAllCategories, getCategoryById } = require('../controllers/protected/CategoryController');
 const { createEditCustomField, getAllCustomField, getCustomFieldById, deleteCustomField } = require('../controllers/protected/CustomFieldTemplateController');
 const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, deleteWebsite } = require('../controllers/protected/WebsiteController');
-const { addToddlers, listToddlers } = require('../controllers/protected/ToddlrController');
+const { addToddlers, listToddlers, updateToddlerWithToddlerId } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus, addProductToWishlist } = require('../controllers/protected/ProductController');
 const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController');
 const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2, getOrdersListByType, getOrderDetails } = require('../controllers/protected/NewPaymentController');
@@ -38,6 +38,7 @@ router.delete('/delete/media/:media_id', deleteMedia);
 router.post('/create-or-update/post', createEditPost);
 
 router.post('/add-toddler', addToddlers)
+router.put('/update-toddler/:toddlerId', updateToddlerWithToddlerId)
 router.get('/list-toddler', listToddlers)
 
 router.post('/add-update-product/:id?', createAndUpdateProduct)
