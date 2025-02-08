@@ -29,7 +29,7 @@ const createTopic = async (req, res) => {
     });
     const savedTopic = await topic.save();
     // Respond with the newly created Bundle data
-    return ResponseHandler.success(
+    return ResponseHandler.topicSuccess(
       res,
       savedTopic,
       201,
@@ -125,7 +125,7 @@ const deleteTopic = async (req, res) => {
     topic.deletedAt = Date.now()
     await topic.save();
 
-    ResponseHandler.success(
+    ResponseHandler.topicSuccess(
       res,
       { message: "Record deleted successfully" },
       200,
@@ -212,7 +212,7 @@ const actionOnTopic = async (req, res) => {
       throw new CustomError(404, "Topic not found");
     }
 
-    return ResponseHandler.success(res, updatedTopic, 200, `Action '${action}' toggled successfully`);
+    return ResponseHandler.topicSuccess(res, updatedTopic, 200, `Action '${action}' toggled successfully`);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
@@ -262,7 +262,7 @@ const addCommentsOnTopic = async (req, res) => {
     // Save the updated topic
     await topic.save();
 
-    return ResponseHandler.success(
+    return ResponseHandler.topicSuccess(
       res,
       topic,
       200,
@@ -318,7 +318,7 @@ const likeComment = async (req, res) => {
     // Save the topic with updated comment/reply
     await topic.save();
 
-    return ResponseHandler.success(
+    return ResponseHandler.topicSuccess(
       res,
       topic,
       200,

@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
   profile_pic: { type: String, default: '' },
   firstName: { type: String },
   lastName: { type: String },
-  bio: { type: String },
+  bio: { type: String, default: '' },
   coach: { type: mongoose.Schema.Types.ObjectId, ref: 'Coach' },
   role: {
     type: String,
