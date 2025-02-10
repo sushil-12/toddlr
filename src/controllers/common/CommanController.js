@@ -407,9 +407,14 @@ const bookmarkMessage = async (req, res) => {
     if (!message) {
       throw new CustomError(404, "Message not found");
     }
+    if(message.bookmarked === true){
+      message.bookmarked = false;
+      message.bookmarkedAt = null;
 
-    message.bookmarked = true;
-    message.bookmarkedAt = new Date();
+    }else{
+      message.bookmarked = true;
+      message.bookmarkedAt = new Date();
+    }
 
     await chat.save();
 
