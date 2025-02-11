@@ -127,7 +127,7 @@ const register = async (req, res) => {
 
     // Save the new user in the database
     const customer = await createCustomer(username, email);
-    
+
     newUser.customerID = customer.id;
 
     await newUser.save();
@@ -244,7 +244,7 @@ const socialLogin = async (req, res) => {
           createdBy: existingUser._id,
           status: { $ne: 'executed' }
         });
-    
+
         const bundleId = bundle?._id;
         const cartCount = bundle?.products.length;
 
@@ -262,7 +262,7 @@ const socialLogin = async (req, res) => {
           isOnBoardingComplete: existingUser?.isOnBoardingComplete,
           firstTimeToddlerAddCompleted: existingUser?.firstTimeToddlerAddCompleted,
           temp_email: existingUser?.temp_email,
-          followers: existingUser?.followers,bundleId, cartCount
+          followers: existingUser?.followers, bundleId, cartCount
 
         };
 
@@ -295,7 +295,7 @@ const socialLogin = async (req, res) => {
         createdBy: existingSocialLoginId._id,
         status: { $ne: 'executed' }
       });
-  
+
       const bundleId = bundle?._id;
       const cartCount = bundle?.products.length;
       const userProfile = {
@@ -367,7 +367,7 @@ const socialLogin = async (req, res) => {
         createdBy: user._id,
         status: { $ne: 'executed' }
       });
-  
+
       const bundleId = bundle?._id;
       const cartCount = bundle?.products.length;
 
@@ -423,7 +423,7 @@ const socialLogin = async (req, res) => {
         createdBy: user._id,
         status: { $ne: 'executed' }
       });
-  
+
       const bundleId = bundle?._id;
       const cartCount = bundle?.products.length;
 
@@ -493,7 +493,7 @@ const login = async (req, res) => {
     }
     let sign_in_stamp = new Date();
     if (!user) {
-      ResponseHandler.success(res, { message: 'User not found. Check username or phone number!' }, HTTP_STATUS_CODES.UNAUTHORIZED);
+      ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { message: 'User not found. Check username or phone number!' });
       return;
     }
     if (user.login_expired_till != null && user.login_expired_till > new Date()) {
@@ -531,11 +531,11 @@ const login = async (req, res) => {
           })
           .catch((error) => {
             console.log(error)
-            ResponseHandler.error(res, { reset_link_sent: false, message: "Failed to send Reset link" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+            ResponseHandler.error(res, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, { reset_link_sent: false, message: "Failed to send Reset link" });
           });
       } catch (error) {
         console.log(error)
-        ResponseHandler.error(res, { reset_link_sent: false, message: "Failed to send Reset link" }, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+        ResponseHandler.error(res, HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR, { reset_link_sent: false, message: "Failed to send Reset link" });
       }
       return;
     }
@@ -558,14 +558,14 @@ const login = async (req, res) => {
       rem_attempts = parseInt(process.env.WRONG_ATTEMPT_COUNT - incorrectAttempts);
       if (incorrectAttempts > process.env.WRONG_ATTEMPT_COUNT || incorrectAttempts == process.env.WRONG_ATTEMPT_COUNT) {
         let toast_messaage = '';
-        ResponseHandler.success(res, { message: 'Wrong credentials' }, HTTP_STATUS_CODES.UNAUTHORIZED);
+        ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { message: 'Wrong credentials' });
 
         return;
       } else {
         user.incorrectAttempts = incorrectAttempts;
         user.save();
       }
-      ResponseHandler.success(res, { message: 'Wrong credentials' }, HTTP_STATUS_CODES.UNAUTHORIZED);
+      ResponseHandler.error(res, HTTP_STATUS_CODES.UNAUTHORIZED, { message: 'Wrong credentials' });
       return;
       // throw new CustomError(HTTP_STATUS_CODES.UNAUTHORIZED, HTTP_STATUS_MESSAGES.UNAUTHORIZED);
     }
@@ -615,7 +615,7 @@ const login = async (req, res) => {
     const bundleId = bundle?._id;
     const cartCount = bundle?.products.length;
     let message = "";
-    
+
     const userProfile = {
       _id: userData._id,
       username: userData.username,
@@ -635,10 +635,10 @@ const login = async (req, res) => {
       followers: userData?.followers
 
     };
-    if( userData?.isOnBoardingComplete){
+    if (userData?.isOnBoardingComplete) {
       message = `Welcome Back ${userData.username} !`
-    }else{
-      message= 'Welcome'
+    } else {
+      message = 'Welcome'
     }
     ResponseHandler.success(res, { token, isSocialLogin: false, ...userProfile, isOnBoardingComplete, firstTimeToddlerAddCompleted, message: message }, HTTP_STATUS_CODES.OK);
   } catch (error) {
@@ -758,7 +758,7 @@ const verifyEmail = async (req, res) => {
     const { token } = req.query;
 
     if (!token) {
-      return ResponseHandler.error(res, 'Invalid or missing token', HTTP_STATUS_CODES.BAD_REQUEST);
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.BAD_REQUEST, 'Invalid or missing token');
     }
 
     // Verify the token
@@ -768,7 +768,7 @@ const verifyEmail = async (req, res) => {
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      return ResponseHandler.error(res, 'User not found', HTTP_STATUS_CODES.NOT_FOUND);
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.NOT_FOUND, 'User not found');
     }
 
     // Mark the user as verified
