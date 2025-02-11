@@ -168,10 +168,9 @@ const getOrdersListByType = async (req,res) => {
         orders = await Order.find({ createdBy: userId }).populate("productId");
     }else if ( type === "sold"){
         // find  orders in which product's createdBy is same as userId 
-        orders = await Order.find().populate({
-            path: "productId",
-            match: { createdBy: userId } // Filter products created by the user
-        });
+        orders = await Order.find().populate("productId");
+
+        orders = orders.filter(order => order.productId && order.productId.createdBy.toString() === userId);        
     }else{
       return  ErrorHandler.handleError(error, res,"Invalid order type");
 
