@@ -165,10 +165,10 @@ const getOrdersListByType = async (req,res) => {
     let orders = []
     if(type === "bought"){
         // find orders in which buyerId is userId
-        orders = await Order.find({ createdBy: userId }).populate("productId");
+        orders = await Order.find({ createdBy: userId }).populate("productId").populate("createdBy","_id username email profile_pic")
     }else if ( type === "sold"){
         // find  orders in which product's createdBy is same as userId 
-        orders = await Order.find().populate("productId");
+        orders = await Order.find().populate("productId").populate("createdBy","_id username email profile_pic");
 
         orders = orders.filter(order => order.productId && order.productId.createdBy.toString() === userId);        
     }else{
