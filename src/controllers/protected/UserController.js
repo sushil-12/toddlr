@@ -19,6 +19,7 @@ const Coach = require('../../models/Coach');
 const Chat = require('../../models/Chat');
 const Order = require('../../models/Order');
 const Toddler = require('../../models/Toddler');
+const Address = require('../../models/Address');
 
 
 const defaultSidebarJson = {
@@ -832,6 +833,95 @@ const deleteUser = async (req, res) => {
   }
 }
 
+const addOrEditUserAddress = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    const { addressId, title, street, number, zipCode, city, country } = req.body;
+
+    let address;
+    if (addressId) {
+      // Edit existing address
+      address = await Address.findOne({ _id: addressId, userId });
+      if (!address) {
+        throw new CustomError(404, 'Address not found');
+      }
+
+      address.title = title;
+      address.street = street;
+      address.number = number;
+      address.zipCode = zipCode;
+      address.city = city;
+      address.country = country;
+
+      await address.save();
+      ResponseHandler.success(res, { message: 'Address updated successfully', address }, 200);
+    } else {
+      // Add new address
+      const newAddress = new Address({
+        userId,
+        title,
+        street,
+        number,
+        zipCode,
+        city,
+        country
+      });
+
+      await newAddress.save();
+      ResponseHandler.success(res, { message: 'Address added successfully', address: newAddress }, 201);
+    }
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+const getAddressList = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    const addresses = await Address.find({ userId });
+
+    if (!addresses || addresses.length === 0) {
+      return ResponseHandler.success(res, [], 200);
+    }
+
+    ResponseHandler.success(res, addresses, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
+const setPrimaryAddress = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+    const { addressId } = req.params;
+    console.log(addressId);
+
+    const address = await Address.findOne({ _id: addressId, userId });
+    if (!address) {
+      throw new CustomError(404, 'Address not found');
+    }
+
+    // Set all other addresses of the user to not primary
+    await Address.updateMany({ userId, _id: { $ne: addressId } }, { isPrimary: false });
+
+    // Set the selected address as primary
+    address.isPrimary = true;
+    await address.save();
+
+    ResponseHandler.success(res, { message: 'Primary address set successfully', address }, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 module.exports = {
-  getProfile, getUsersProfile, getRecentOrders, updateOrderReview, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser
+  getProfile, getUsersProfile, getRecentOrders, updateOrderReview, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, addOrEditUserAddress, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, getAddressList, setPrimaryAddress
 };
