@@ -237,9 +237,10 @@ const getUserChats = async (req, res) => {
     // Structure the chat data
     const userChats = chats.map((chat) => {
       // Identify the other participant
+      
       const otherParticipant = chat.participants.find(
-        (participant) => participant._id.toString() !== userId
-      );
+  (participant) => participant._id.toString() !== userId
+);
 
       // Calculate unread message count for the current user
       const unreadMessageCount = chat.messages.reduce((count, message) => {
