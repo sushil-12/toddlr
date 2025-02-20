@@ -227,21 +227,19 @@ const getUserChats = async (req, res) => {
         path: "messages",
         options: { sort: { createdAt: -1 } }, // Sort messages by most recent first
         select: "content createdAt readBy", // Select necessary message fields
-      })
-      .sort({ updatedAt: 1 }); // Sort chats by updatedAt field
+      }).sort({ updatedAt: 1 }); // Sort chats by updatedAt field
 
     if (!chats || chats.length === 0) {
       return ResponseHandler.success(res, [], 200);
     }
 
     // Structure the chat data
-    const userChats = chats.map((chat) => {
+    const userChats = await Promise.all(chats.map(async (chat) => {
       // Identify the other participant
+      const otherParticipant = chat.participants.find((participant) => participant._id.toString() !== userId);
       
-      const otherParticipant = chat.participants.find(
-  (participant) => participant._id.toString() !== userId
-);
-
+      const otherUserData = await User.findById(otherParticipant);
+      console.log(otherUserData,otherParticipant,  "otherUserData")
       // Calculate unread message count for the current user
       const unreadMessageCount = chat.messages.reduce((count, message) => {
         if (!message?.readBy?.includes(userId)) {
@@ -256,9 +254,9 @@ const getUserChats = async (req, res) => {
       return {
         chatId: chat._id,
         otherUser: {
-          userId: otherParticipant?._id,
-          username: otherParticipant?.username,
-          profilePicture: otherParticipant?.profile_pic || "", // Map profile_pic to profilePicture
+          userId: otherUserData?._id,
+          username: otherUserData?.username,
+          profilePicture: otherUserData?.profile_pic || "", // Map profile_pic to profilePicture
         },
         recentMessage: {
           content: recentMessage?.content,
@@ -266,7 +264,7 @@ const getUserChats = async (req, res) => {
         },
         unreadMessageCount,
       };
-    });
+    }));
 
     // Send the user chats in the response
     ResponseHandler.success(res, userChats, 200);
@@ -442,9 +440,14 @@ const getBookmarkedMessages = async (req, res) => {
       throw new CustomError(404, "No chats found");
     }
 
-    // Collect all bookmarked messages from all chats
+    // Collect all bookmarked messages from all chats and include chatId
     const bookmarkedMessages = chats.reduce((acc, chat) => {
-      const messages = chat.messages.filter((message) => message.bookmarked);
+      const messages = chat.messages
+        .filter((message) => message.bookmarked)
+        .map((message) => ({
+          ...message.toObject(),
+          chatId: chat._id,
+        }));
       return acc.concat(messages);
     }, []);
 

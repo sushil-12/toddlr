@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { CustomError, ErrorHandler } = require('../utils/responseHandler');
 const { HTTP_STATUS_CODES, HTTP_STATUS_MESSAGES } = require('../constants/error_message_codes');
+const TokenBlackList = require('../models/TokenBlackList');
 
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
     try {
         const authorizationHeader = req.headers.authorization;
         if (!authorizationHeader) {
@@ -13,6 +14,12 @@ const verifyToken = (req, res, next) => {
         if (!token) {
             throw new CustomError(HTTP_STATUS_CODES.UNAUTHORIZED, HTTP_STATUS_MESSAGES.UNAUTHORIZED);
         }
+        // Check if token is blacklisted
+        const isBlacklisted = await TokenBlackList.findOne({ token });
+        if (isBlacklisted) {
+            throw new CustomError(401, 'Token has been expired or blacklisted! Please sign in again');
+        }
+
 
         try {
             const decodedToken = jwt.verify(token, process.env.JWT_SECRET);

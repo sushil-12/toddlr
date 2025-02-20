@@ -20,6 +20,7 @@ const Chat = require('../../models/Chat');
 const Order = require('../../models/Order');
 const Toddler = require('../../models/Toddler');
 const Address = require('../../models/Address');
+const TokenBlackList = require('../../models/TokenBlackList');
 
 
 const defaultSidebarJson = {
@@ -293,13 +294,19 @@ const logout = async (req, res) => {
     const userId = decodedToken.userId;
 
     const user = await User.findById(userId);
+
     if (!user) {
       throw new CustomError(404, 'User not found');
     }
-    user.staySignedIn = false;
-    user.save();
 
-    ResponseHandler.success(res, 200);
+    user.staySignedIn = false;
+    await user.save();
+
+    // Add token to tokenBlackList
+    const tokenBlackList = new TokenBlackList({ token });
+    await tokenBlackList.save();
+
+    ResponseHandler.success(res, { message: 'Logged out successfully' }, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
@@ -922,6 +929,30 @@ const setPrimaryAddress = async (req, res) => {
   }
 };
 
+
+const softDeleteAccount = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new CustomError(404, 'User not found');
+    }
+
+    user.deleted_at = Date.now();
+    await user.save();
+    // Add token to tokenBlackList
+    const tokenBlackList = new TokenBlackList({ token });
+    await tokenBlackList.save();
+
+    ResponseHandler.success(res, { message: 'Account deleted successfully' }, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 module.exports = {
-  getProfile, getUsersProfile, getRecentOrders, updateOrderReview, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, addOrEditUserAddress, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, getAddressList, setPrimaryAddress
+  getProfile, getUsersProfile, getRecentOrders, updateOrderReview, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, addOrEditUserAddress, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, getAddressList, setPrimaryAddress, softDeleteAccount
 };
