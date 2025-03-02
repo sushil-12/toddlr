@@ -104,6 +104,10 @@ const register = async (req, res) => {
 
     // Check if a user with the same email exists
     const existingEmailUser = await User.findOne({ email });
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return ResponseHandler.error(res, HTTP_STATUS_CODES.CONFLICT, 'User with this username exists');
+    }
     if (existingEmailUser) {
       return ResponseHandler.error(res, HTTP_STATUS_CODES.CONFLICT, 'User with this email exists!'); // Use CONFLICT (409)
     }
