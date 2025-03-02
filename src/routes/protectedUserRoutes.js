@@ -10,8 +10,9 @@ const { createOrEditWebsite, listWebsites, getWebsite, listWebsitesWithMenus, de
 const { addToddlers, listToddlers, updateToddlerWithToddlerId } = require('../controllers/protected/ToddlrController');
 const { createAndUpdateProduct, getProducts, getProductDetails, makeAnOffer, updateOffer, makeAnOfferForBundle, updateOfferForBundle, updateProductStatus, addProductToWishlist } = require('../controllers/protected/ProductController');
 const { createBundle, listBundles, getBundleById } = require('../controllers/protected/CartController');
-const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2, getOrdersListByType, getOrderDetails } = require('../controllers/protected/NewPaymentController');
+const { createMolliePayment, getPaymentStatus, addFunds, createMolliePaymentV2, getOrdersListByType, getOrderDetails, addCard } = require('../controllers/protected/NewPaymentController');
 const { createTopic, getTopicDetails, getTopicsList, deleteTopic, updateTopic, actionOnTopic, addCommentsOnTopic, likeComment } = require('../controllers/protected/ForumTopicController');
+const { createAndUpdateWishlist, getWishlists, getWishlistDetails, deleteWishlist } = require('../controllers/protected/WishlistController');
 const router = express.Router();
 
 // Apply the token verification middleware to all routes in this router
@@ -50,7 +51,13 @@ router.post('/add-update-product/:id?', createAndUpdateProduct)
 router.get('/list-all-products', getProducts);
 router.get('/get-product-details/:id', getProductDetails);
 router.put('/reserve-product/:id?', updateProductStatus)
-router.put('/add-product-to-wishlist/:id?', addProductToWishlist)
+router.put('/add-product-to-wishlist/:id?', addProductToWishlist);
+
+router.post('/wishlist', createAndUpdateWishlist);
+router.put('/wishlist/:id', createAndUpdateWishlist);
+router.get('/wishlists', getWishlists);
+router.get('/wishlist/:id', getWishlistDetails);
+router.delete('/wishlist/:id', deleteWishlist);
 
 router.post('/product/:productId/make-offer', makeAnOffer);
 router.put('/product/update-offer/:offerId', updateOffer);
@@ -98,6 +105,7 @@ router.get('/list-files', listFiles);
 router.post('/create-transaction', createMolliePayment);
 router.get('/get-payment-status', getPaymentStatus);
 router.post('/add-funds', createMolliePaymentV2);
+router.post('/add-card', addCard);
 
 
 router.post('/cart/create-bundle', createBundle);

@@ -17,7 +17,7 @@ const addFunds = async (req, res) => {
         if (!amount) {
             return ResponseHandler.error(res, 400, "Amount is required");
         }
-       
+
 
         // Assuming you have a User model to update the user's balance
         const user = await User.findById(userId);
@@ -33,6 +33,56 @@ const addFunds = async (req, res) => {
     } catch (error) {
         console.log(error);
         return ResponseHandler.error(res, 500, "Unable to add funds");
+    }
+};
+
+const addCard = async (req, res) => {
+    try {
+        // Extract token and decode user ID
+        const token = req.headers.authorization.split(' ')[1];
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decodedToken.userId;
+
+        const { cardHolder, cardNumber, expiryDate, cvv } = req.body;
+
+        if (!cardHolder || !cardNumber || !expiryDate || !cvv) {
+            return ResponseHandler.error(res, 400, "All card details are required");
+        }
+
+        // Find user in the database
+        const user = await User.findById(userId);
+        if (!user) {
+            return ResponseHandler.error(res, 404, "User not found");
+        }
+
+        // Step 1: Create a payment method in Mollie (for saving card)
+        const paymentMethod = await mollieClient.customers.create({
+            name: cardHolder,
+            email: user.email,
+        });
+
+        // Step 2: Add the card details to Mollie
+        const payment = await mollieClient.payments.create({
+            amount: { value: "0.10", currency: "EUR" }, // Small amount for verification
+            method: "creditcard",
+            customerId: paymentMethod.id,
+            description: "Card registration",
+            redirectUrl: "https://your-app.com/card-confirmation",
+        });
+
+        if (!payment.id) {
+            return ResponseHandler.error(res, 500, "Failed to add card to Mollie");
+        }
+
+        // Step 3: Store only the Mollie card ID in the user's profile
+        user.cards.push({ mollieCardId: payment.id });
+        await user.save();
+
+        return ResponseHandler.success(res, { cardId: payment.id }, 200, "Card added successfully");
+
+    } catch (error) {
+        console.error(error);
+        return ResponseHandler.error(res, 500, "Unable to add card");
     }
 };
 
@@ -101,14 +151,14 @@ const createMolliePaymentV2 = async (req, res) => {
             return ResponseHandler.error(res, 400, "Amount is required");
         }
         try {
-            const payment =  await mollieClient.payments.create({
+            const payment = await mollieClient.payments.create({
                 amount: {
                     value: amount,
                     currency: 'USD'
                 },
                 description: 'Add funds to wallet for user id - ' + createdBy,
                 redirectUrl: 'https://toddlr.page.link/Ymry?screen=payment-success',
-                webhookUrl: 'https://toddlr.onrender.com/api/common/add-fund-webhook?userId=' + createdBy+'&amount='+amount
+                webhookUrl: 'https://toddlr.onrender.com/api/common/add-fund-webhook?userId=' + createdBy + '&amount=' + amount
             });
             const paymentDetails = new Payment({
                 createdBy,
@@ -156,44 +206,44 @@ const getPaymentStatus = async (req, res) => {
 
 }
 
-const getOrdersListByType = async (req,res) => {
-    const type  = req.params.type
+const getOrdersListByType = async (req, res) => {
+    const type = req.params.type
     // Extract the userId from the request token (assuming authentication middleware)
     const token = req.headers.authorization?.split(" ")[1];
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decodedToken.userId;
     let orders = []
-    if(type === "bought"){
+    if (type === "bought") {
         // find orders in which buyerId is userId
         orders = await Order.find({ createdBy: userId }).populate({
             path: "productId",
-            populate:{
-                path:"createdBy",
-                select:"_id username email profile_pic"
+            populate: {
+                path: "createdBy",
+                select: "_id username email profile_pic"
             }
-        }).populate("createdBy","_id username email profile_pic")
-    }else if ( type === "sold"){
+        }).populate("createdBy", "_id username email profile_pic")
+    } else if (type === "sold") {
         // find  orders in which product's createdBy is same as userId 
         orders = await Order.find().populate({
             path: "productId",
-            populate:{
-                path:"createdBy",
-                select:"_id username email profile_pic"
+            populate: {
+                path: "createdBy",
+                select: "_id username email profile_pic"
             }
-        }).populate("createdBy","_id username email profile_pic")
+        }).populate("createdBy", "_id username email profile_pic")
 
-        orders = orders.filter(order => order.productId && order.productId.createdBy._id.toString() === userId);        
-    }else{
-      return  ErrorHandler.handleError(error, res,"Invalid order type");
+        orders = orders.filter(order => order.productId && order.productId.createdBy._id.toString() === userId);
+    } else {
+        return ErrorHandler.handleError(error, res, "Invalid order type");
 
     }
 
-    return ResponseHandler.success(res,orders,200,"Data fetched successfully")
+    return ResponseHandler.success(res, orders, 200, "Data fetched successfully")
 
 }
 
 
-const getOrderDetails = async(req,res) => {
+const getOrderDetails = async (req, res) => {
     const orderId = req.params.id
     // Extract the userId from the request token (assuming authentication middleware)
     const token = req.headers.authorization?.split(" ")[1];
@@ -202,20 +252,20 @@ const getOrderDetails = async(req,res) => {
 
     const order = await Order.findById(orderId).populate({
         path: "productId",
-        populate:{
+        populate: {
             path: "createdBy"
         }
     })
 
-    if(order){
-        return ResponseHandler.success(res,order,200,"Order details fetched successfully")
-    }else{
-       return ErrorHandler.handleError(error, res,"Order Not Found");
+    if (order) {
+        return ResponseHandler.success(res, order, 200, "Order details fetched successfully")
+    } else {
+        return ErrorHandler.handleError(error, res, "Order Not Found");
     }
 }
 
 module.exports = {
-    createMolliePayment,
+    createMolliePayment, addCard,
     createMolliePaymentV2,
     addFunds,
     getPaymentStatus,

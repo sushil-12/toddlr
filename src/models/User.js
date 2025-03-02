@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema({
   },
   resetTokenExpiry: { type: Date },
   walletBalance: { type: Number, default: 0 },
+  cards: [
+    {
+      mollieCardId: String,
+      addedAt: { type: Date, default: Date.now }
+    }
+  ],
   verificationLinkExpiryTime: { type: Date },
   staySignedIn: { type: Boolean, default: false },
   isOnBoardingComplete: { type: Boolean, default: false },

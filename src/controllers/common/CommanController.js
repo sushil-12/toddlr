@@ -458,35 +458,41 @@ const getBookmarkedMessages = async (req, res) => {
 };
 
 const deleteBookmarkedMessage = async (req, res) => {
-  const { chatId, messageId } = req.body;
+  const { bookmarks } = req.body; // Expecting an array of { chatId, messageId }
+
+  if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
+    throw new CustomError(400, "Bookmarks array is required and cannot be empty");
+  }
 
   try {
-    // Find the chat document by ID
-    const chat = await Chat.findById(chatId);
-    if (!chat) {
-      throw new CustomError(404, "Chat not found");
+    for (const { chatId, messageId } of bookmarks) {
+      // Find the chat document by ID and ensure it's a Mongoose document
+      const chat = await Chat.findById(chatId);
+      if (!chat) {
+        throw new CustomError(404, `Chat not found for chatId: ${chatId}`);
+      }
+
+      // Find the specific message by ID
+      const message = chat.messages.id(messageId);
+      if (!message) {
+        throw new CustomError(404, `Message not found for messageId: ${messageId}`);
+      }
+
+      // Check if the message is bookmarked
+      if (!message.bookmarked) {
+        throw new CustomError(400, `Message with messageId: ${messageId} is not bookmarked`);
+      }
+
+      // Remove the bookmark
+      message.bookmarked = false;
+      message.bookmarkedAt = null; // Clear the timestamp
+
+      // Save the updated chat document inside the loop
+      await chat.save(); 
     }
-
-    // Find the specific message by ID
-    const message = chat.messages.id(messageId);
-    if (!message) {
-      throw new CustomError(404, "Message not found");
-    }
-
-    // Check if the message is bookmarked
-    if (!message.bookmarked) {
-      throw new CustomError(400, "Message is not bookmarked");
-    }
-
-    // Remove the bookmark
-    message.bookmarked = false;
-    message.bookmarkedAt = null; // Clear the timestamp
-
-    // Save the updated chat document
-    await chat.save();
 
     // Send a success response
-    ResponseHandler.success(res, { message: "Bookmark removed successfully" }, 200);
+    ResponseHandler.success(res, { message: "Bookmarks removed successfully" }, 200);
   } catch (error) {
     // Handle any errors
     ErrorHandler.handleError(error, res);
