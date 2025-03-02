@@ -132,17 +132,17 @@ const addProductToWishlist = async (req, res) => {
     if (user.wishlist.includes(productId)) {
       // Remove the productId from the wishlist array
       user.wishlist = user.wishlist.filter(id => id.toString() !== productId.toString());
-  
+
       // Save the updated user
       await user.save();
-  
+
       return ResponseHandler.success(
-          res,
-          null,
-          200,
-          "Product removed from wishlist"
+        res,
+        null,
+        200,
+        "Product removed from wishlist"
       );
-  }
+    }
 
     // Add the product to the user's wishlist
     user.wishlist.push(productId);
@@ -213,6 +213,8 @@ const getProducts = async (req, res) => {
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
+    filter.deletedAt = null;
+
     // Pagination and sorting options
     const options = {
       page: parseInt(page, 10),
@@ -250,7 +252,7 @@ const getProducts = async (req, res) => {
     });
 
     if (wishlisted === 'true') {
-        products.docs = products.docs.filter(product => product.wishlisted === true);
+      products.docs = products.docs.filter(product => product.wishlisted === true);
     }
 
     // Respond with the products data
@@ -720,10 +722,35 @@ const updateProductStatus = async (req, res) => {
   }
 };
 
+const deleteProduct = async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    // Soft delete by updating isDeleted flag instead of removing the document
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      { deletedAt: Date.now() },
+      { new: true }
+    );
+
+    if (!product) {
+      return ResponseHandler.error(res, 404, "Product Not Found.");
+    }
+
+    return ResponseHandler.success(
+      res,
+      { message: "Product deleted successfully." },
+      200);
+  } catch (error) {
+    return ResponseHandler.error(res, 500, "Internal server error");
+  }
+};
+
 module.exports = {
   createAndUpdateProduct,
   addProductToWishlist,
   getProducts,
+  deleteProduct,
   getProductDetails,
   makeAnOffer,
   updateOffer,
