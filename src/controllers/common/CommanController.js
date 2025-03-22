@@ -146,7 +146,7 @@ const getMessages = async (req, res) => {
     });
 
     if (!chat) {
-      throw new CustomError(400, "Chat not found");
+      ResponseHandler.success(res, [], 200);
     }
     if (chat) {
       chat.messages = chat.messages.sort(

@@ -175,7 +175,9 @@ const getProducts = async (req, res) => {
       condition,
       minPrice,
       maxPrice,
+      brand,
       size,
+      occasion,
       age,
       createdBy,
       wishlisted,
@@ -203,6 +205,8 @@ const getProducts = async (req, res) => {
 
     // Add other query parameters to the filter
     if (category) filter.category = category;
+    if (brand) filter.brand = brand;
+    if (occasion) filter.occasion = occasion;
     if (gender) filter.gender = gender;
     if (condition) filter.condition = condition;
     if (size) filter.size = size;
