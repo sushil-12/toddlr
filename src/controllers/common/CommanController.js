@@ -223,10 +223,10 @@ const getUserChats = async (req, res) => {
 
   try {
     // Find all chats where the user is a participant
-      const chats = await Chat.find({
-        participants: userId,
-        isCoachChat: false
-      })
+    const chats = await Chat.find({
+      participants: userId,
+      isCoachChat: false
+    })
       .populate("participants", "username email profile_pic") // Populate participants' details
       .populate({
         path: "messages",
@@ -239,40 +239,59 @@ const getUserChats = async (req, res) => {
     }
 
     // Structure the chat data
-    const userChats = await Promise.all(chats.map(async (chat) => {
-      // Identify the other participant
-      const otherParticipant = chat.participants.find((participant) => participant._id.toString() !== userId);
-
-      const otherUserData = await User.findById(otherParticipant);
-      console.log(otherUserData, otherParticipant, "otherUserData")
-      // Calculate unread message count for the current user
-      const unreadMessageCount = chat.messages.reduce((count, message) => {
-        if (!message?.readBy?.includes(userId)) {
-          return count + 1;
+    const userChats = await Promise.all(
+      chats.map(async (chat) => {
+        // Identify the other participant
+        const otherParticipant = chat.participants.find(
+          (participant) => participant._id.toString() !== userId
+        );
+    
+        if (!otherParticipant) {
+          console.log("No other participant found for chat:", chat._id);
+          return null;
         }
-        return count;
-      }, 0);
-
-      // Get the most recent message
-      const recentMessage = chat.messages[chat.messages.length - 1];
-
-      return {
-        chatId: chat._id,
-        otherUser: {
-          userId: otherUserData?._id,
-          username: otherUserData?.username,
-          profilePicture: otherUserData?.profile_pic || "", // Map profile_pic to profilePicture
-        },
-        recentMessage: {
-          content: recentMessage?.content,
-          createdAt: recentMessage?.createdAt,
-        },
-        unreadMessageCount,
-      };
-    }));
+    
+        const otherUserData = await User.findById(otherParticipant);
+        
+        if (!otherUserData) {
+          console.log("User not found:", otherParticipant);
+          return null;
+        }
+    
+        // Calculate unread message count for the current user
+        const unreadMessageCount = chat.messages.reduce((count, message) => {
+          if (message && message.readBy && !message.readBy.includes(userId)) {
+            return count + 1;
+          }
+          return count;
+        }, 0);
+    
+        // Get the most recent message
+        const recentMessage = chat.messages[chat.messages.length - 1];
+    
+        return {
+          chatId: chat._id,
+          otherUser: {
+            userId: otherUserData._id || "id",
+            username: otherUserData.username || "coach",
+            profilePicture: otherUserData.profile_pic || "", // Map profile_pic to profilePicture
+          },
+          recentMessage: recentMessage
+            ? {
+                content: recentMessage.content,
+                createdAt: recentMessage.createdAt,
+              }
+            : null,
+          unreadMessageCount,
+        };
+      })
+    );
+    
+    // **Filter out null values**
+    const filteredUserChats = userChats.filter((chat) => chat !== null);
 
     // Send the user chats in the response
-    ResponseHandler.success(res, userChats, 200);
+    ResponseHandler.success(res, filteredUserChats, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }
