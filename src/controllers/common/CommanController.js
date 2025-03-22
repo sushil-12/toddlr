@@ -9,10 +9,9 @@ const mongoose = require("mongoose");
 const Chat = require("../../models/Chat"); // Assuming Chat model exists
 const Offer = require("../../models/Offer");
 const { default: OpenAI } = require("openai");
-const { chat } = require("googleapis/build/src/apis/chat");
-const { isCancel } = require("axios");
 const User = require("../../models/User");
 const Product = require("../../models/Product");
+const { logRequest, logError, logResponse } = require("../../middleware/newLogger");
 
 // Function to validate the input fields for contact
 const validateContactDetails = (fname, email, message, subject) => {
@@ -40,6 +39,7 @@ const validateContactDetails = (fname, email, message, subject) => {
 
 // Chat API - Create a new chat or fetch existing one
 const createChat = async (req, res) => {
+  logRequest(req);
   const { participants } = req.body;
 
   if (participants.length !== 2) {
@@ -85,6 +85,7 @@ const createChat = async (req, res) => {
             };
           } catch (err) {
             console.error("Error populating offer:", err);
+            logError(req, err);
             message.content = {
               ...message.content,
               error: "Failed to fetch offer details",
@@ -110,7 +111,7 @@ const createChat = async (req, res) => {
 const sendMessage = async (req, res) => {
   const { chatId } = req.params;
   const { sender, content } = req.body;
-
+  logRequest(req);
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
@@ -125,6 +126,7 @@ const sendMessage = async (req, res) => {
     }
     ResponseHandler.success(res, chat, 200);
   } catch (error) {
+    logError(req, error);
     ErrorHandler.handleError(error, res);
   }
 };
@@ -132,7 +134,7 @@ const sendMessage = async (req, res) => {
 // Chat API - Get all messages in a chat
 const getMessages = async (req, res) => {
   const { chatId } = req.params;
-
+  console.log(chatId);
   try {
     const chat = await Chat.findById(chatId).populate({
       path: "messages",
@@ -221,7 +223,10 @@ const getUserChats = async (req, res) => {
 
   try {
     // Find all chats where the user is a participant
-    const chats = await Chat.find({ participants: userId })
+      const chats = await Chat.find({
+        participants: userId,
+        isCoachChat: false
+      })
       .populate("participants", "username email profile_pic") // Populate participants' details
       .populate({
         path: "messages",
@@ -237,9 +242,9 @@ const getUserChats = async (req, res) => {
     const userChats = await Promise.all(chats.map(async (chat) => {
       // Identify the other participant
       const otherParticipant = chat.participants.find((participant) => participant._id.toString() !== userId);
-      
+
       const otherUserData = await User.findById(otherParticipant);
-      console.log(otherUserData,otherParticipant,  "otherUserData")
+      console.log(otherUserData, otherParticipant, "otherUserData")
       // Calculate unread message count for the current user
       const unreadMessageCount = chat.messages.reduce((count, message) => {
         if (!message?.readBy?.includes(userId)) {
@@ -406,11 +411,11 @@ const bookmarkMessage = async (req, res) => {
     if (!message) {
       throw new CustomError(404, "Message not found");
     }
-    if(message.bookmarked === true){
+    if (message.bookmarked === true) {
       message.bookmarked = false;
       message.bookmarkedAt = null;
 
-    }else{
+    } else {
       message.bookmarked = true;
       message.bookmarkedAt = new Date();
     }
@@ -488,7 +493,7 @@ const deleteBookmarkedMessage = async (req, res) => {
       message.bookmarkedAt = null; // Clear the timestamp
 
       // Save the updated chat document inside the loop
-      await chat.save(); 
+      await chat.save();
     }
 
     // Send a success response
@@ -505,10 +510,10 @@ const searchForAnything = async (req, res) => {
 
 
   if (!search || search.trim() === "") {
-    return ResponseHandler.error(res, 404, "Search string cannot be empty" );
+    return ResponseHandler.error(res, 404, "Search string cannot be empty");
   }
   if (search.length < 3) {
-    return ResponseHandler.error(res, 404,  "Search string must be at least 3 characters long");
+    return ResponseHandler.error(res, 404, "Search string must be at least 3 characters long");
   }
 
 
