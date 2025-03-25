@@ -31,7 +31,7 @@ class ResponseHandler {
   }
   static error(res, code, message, errors = []) {
     // Handle MongoDB duplicate key error
-    if (code === 11000) {
+    if (code === 11000 || code === 'insufficient_quota' ) {
       code = 500; // Change the status code for duplicate key errors
     }
 
