@@ -80,7 +80,10 @@ app.use(useragent.express());
 
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use((req, res, next) => {
+  console.log(`API Called: ${req.method} ${req.originalUrl}`);
+  next();
+});
 // Applying the rate limiter to all requests
 // app.use(limiter);
 
@@ -285,6 +288,8 @@ app.post('/updateOrderStatus/:orderId', async (req, res) => {
 app.use((req, res, next) => {
   ErrorHandler.handleNotFound(res);
 });
+
+
 
 // Generic Error Handler
 app.use((err, req, res, next) => {
