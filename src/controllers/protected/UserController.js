@@ -637,6 +637,8 @@ const editUserProfile = async (req, res) => {
     // Extract fields from the request body
     const { username, email, firstName, lastName, bio, profile_pic, temp_email, isOnBoardingComplete, birthDate, gender } = req.body;
 
+    console.log("I am called", req.body);
+
     // Find the user by ID
     const user = await User.findById(userId);
     if (!user) {
@@ -695,6 +697,7 @@ const editUserProfile = async (req, res) => {
       toddlers
 
     };
+    console.log("USER TEMP updatedUserProfile",updatedUserProfile)
 
     ResponseHandler.success(res, updatedUserProfile, 200);
   } catch (error) {
