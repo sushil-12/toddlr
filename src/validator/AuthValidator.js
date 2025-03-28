@@ -9,12 +9,12 @@ class AuthValidator {
         // Check if it's an update (with `id` present) or a new registration
         if (id) {
             // In case of update, password is not required
-            if (!username || !email || !phoneNumber) {
+            if (!username || !email ) {
                 throw new CustomError(400, 'All fields are required for update');
             }
         } else {
             // In case of new registration, password is required
-            if (!username || !password || !email || !phoneNumber) {
+            if (!username || !password || !email ) {
                 throw new CustomError(400, 'All fields are required for registration');
             }
 
