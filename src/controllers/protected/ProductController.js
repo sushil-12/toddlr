@@ -344,7 +344,7 @@ const makeAnOffer = async (req, res) => {
       product: productId,
       user: userId,
       price: offer_price,
-      description: offer_description,
+      description: offer_description  == !'' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
     });
 
     // Initial offer message
