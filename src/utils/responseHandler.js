@@ -30,9 +30,17 @@ class ResponseHandler {
     });
   }
   static error(res, code, message, errors = []) {
-    // Handle MongoDB duplicate key error
-    if (code === 11000 || code === 'insufficient_quota' ) {
-      code = 500; // Change the status code for duplicate key errors
+    // Handle MongoDB duplicate key error and OpenAI API errors
+    if (code === 11000 || 
+        code === 'insufficient_quota' || 
+        code === 'model_not_found' ||
+        code === 'invalid_request_error' ||
+        code === 'authentication_error') {
+      code = code === 11000 ? 409 : // Duplicate key error
+             code === 'insufficient_quota' ? 503 : // Service unavailable
+             code === 'invalid_request_error' ? 400 : // Bad request
+             code === 'authentication_error' ? 401 : // Unauthorized
+             500; // Default server error
     }
 
     // If message is an object, extract the `message` property

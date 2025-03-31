@@ -134,7 +134,6 @@ const sendMessage = async (req, res) => {
 // Chat API - Get all messages in a chat
 const getMessages = async (req, res) => {
   const { chatId } = req.params;
-  console.log(chatId);
   try {
     const chat = await Chat.findById(chatId).populate({
       path: "messages",
@@ -146,13 +145,13 @@ const getMessages = async (req, res) => {
     });
 
     if (!chat) {
-      ResponseHandler.success(res, [], 200);
+      return ResponseHandler.success(res, [], 200);
     }
-    if (chat) {
-      chat.messages = chat.messages.sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-      );
-    }
+
+    // Sort messages by timestamp
+    chat.messages = chat.messages.sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    );
 
     // Iterate through each message to check if message.content is an object and needs manipulation
     const updatedMessages = await Promise.all(
@@ -192,7 +191,6 @@ const getMessages = async (req, res) => {
                   ? messageContent.productsList
                   : [],
             };
-            console.log("UPDATED MESSAGE CONTENT===>", message.content);
           } catch (err) {
             console.error("Error populating offer:", err);
             message.content = {
@@ -206,9 +204,10 @@ const getMessages = async (req, res) => {
     );
 
     // Send the updated messages in the response
-    ResponseHandler.success(res, updatedMessages, 200);
+    return ResponseHandler.success(res, updatedMessages, 200);
   } catch (error) {
-    ErrorHandler.handleError(error, res);
+    console.error("Error in getMessages:", error);
+    return ErrorHandler.handleError(error, res);
   }
 };
 
@@ -353,14 +352,27 @@ const openai = new OpenAI();
 const ChatWithToddlerProfile = async (req, res) => {
   const { toddler_id, toddlr, question, chatId, senderId, coachId } = req.body;
 
+  // Validate required fields
   if (!toddlr || !question) {
     throw new CustomError(400, "Toddler profile and question are required");
   }
 
+  // Validate toddler profile fields
+  if (!toddlr.name || !toddlr.age || !toddlr.gender) {
+    throw new CustomError(400, "Toddler profile must include name, age, and gender");
+  }
+
   try {
-    const prompt = `Provide a concise answer in not more than 100 words. Here is some information about the toddler: 
-    Name: ${toddlr.name}, Age: ${toddlr.age}, Gender: ${toddlr.gender}. 
-    Based on this profile, answer the following question: ${question}`;
+    // Construct a more detailed prompt
+    const prompt = `As a child development expert, provide a concise and helpful answer in not more than 100 words. 
+    Here is the toddler's profile:
+    - Name: ${toddlr.name}
+    - Age: ${toddlr.age}
+    - Gender: ${toddlr.gender}
+    
+    Question: ${question}
+    
+    Please provide a developmentally appropriate response that considers the child's age and characteristics.`;
 
     let chat;
     if (chatId && senderId) {
@@ -368,6 +380,8 @@ const ChatWithToddlerProfile = async (req, res) => {
       if (!chat) {
         throw new CustomError(404, "Chat not found");
       }
+      
+      // Add user's question to chat
       const requestMessage = {
         sender: senderId,
         chatCreatedBy: senderId,
@@ -382,35 +396,58 @@ const ChatWithToddlerProfile = async (req, res) => {
       await chat.save();
     }
 
-    const completion = await openai.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "gpt-4o-mini",
-    });
+    // Call OpenAI API with proper model name
+    try {
+      const completion = await openai.chat.completions.create({
+        messages: [{ role: "user", content: prompt }],
+        model: "gpt-4o",// Using the correct model name
+        temperature: 0.7,
+        max_tokens: 150
+      });
 
-    if (chatId && senderId) {
-      chat = await Chat.findById(chatId);
-      if (!chat) {
-        throw new CustomError(404, "Chat not found");
+      if (!completion?.choices?.[0]?.message?.content) {
+        throw new CustomError(500, "Failed to get response from AI");
       }
 
-      console.log("completion?.choices[0]?.message?.content", completion?.choices[0]?.message?.content)
-      const responseMessage = {
-        sender: coachId,
-        chatCreatedBy: senderId,
-        toddler: toddler_id,
-        content: completion?.choices[0]?.message?.content,
-        timestamp: new Date(),
-      };
+      if (chatId && senderId) {
+        chat = await Chat.findById(chatId);
+        if (!chat) {
+          throw new CustomError(404, "Chat not found");
+        }
 
-      chat.messages.push(responseMessage);
-      chat.isCoachChat = true;
-      chat.chatCreatedBy = senderId;
-      await chat.save();
+        // Add AI response to chat
+        const responseMessage = {
+          sender: coachId,
+          chatCreatedBy: senderId,
+          toddler: toddler_id,
+          content: completion.choices[0].message.content,
+          timestamp: new Date(),
+        };
+
+        chat.messages.push(responseMessage);
+        chat.isCoachChat = true;
+        chat.chatCreatedBy = senderId;
+        await chat.save();
+      }
+
+      const chatLastMessage = chat?.messages?.slice(-1)[0];
+      ResponseHandler.success(res, chatLastMessage, 200);
+    } catch (openaiError) {
+      console.error("OpenAI API Error:", openaiError);
+      
+      // Handle specific OpenAI API errors
+      if (openaiError.type === 'insufficient_quota') {
+        throw new CustomError(503, "AI service is currently unavailable. Please try again later.");
+      } else if (openaiError.type === 'invalid_request_error') {
+        throw new CustomError(400, "Invalid request to AI service. Please try again.");
+      } else if (openaiError.type === 'authentication_error') {
+        throw new CustomError(401, "AI service authentication failed. Please contact support.");
+      } else {
+        throw new CustomError(500, "Failed to get response from AI service. Please try again later.");
+      }
     }
-
-    const chatLastMessage = chat?.messages?.slice(-1)[0];
-    ResponseHandler.success(res, chatLastMessage, 200);
   } catch (error) {
+    console.error("Error in ChatWithToddlerProfile:", error);
     ErrorHandler.handleError(error, res);
   }
 };
