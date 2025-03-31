@@ -39,7 +39,7 @@ const validateContactDetails = (fname, email, message, subject) => {
 
 // Chat API - Create a new chat or fetch existing one
 const createChat = async (req, res) => {
-  logRequest(req);
+  // logRequest(req);
   const { participants } = req.body;
 
   if (participants.length !== 2) {
@@ -111,7 +111,7 @@ const createChat = async (req, res) => {
 const sendMessage = async (req, res) => {
   const { chatId } = req.params;
   const { sender, content } = req.body;
-  logRequest(req);
+  // logRequest(req);
   try {
     const chat = await Chat.findByIdAndUpdate(
       chatId,
