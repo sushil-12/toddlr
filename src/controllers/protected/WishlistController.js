@@ -10,6 +10,8 @@ const Product = require("../../models/Product");
 
 const createAndUpdateWishlist = async (req, res) => {
     try {
+
+        // need to updated
         const wishlistId = req.params.id;
         const token = req.headers.authorization.split(" ")[1];
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);

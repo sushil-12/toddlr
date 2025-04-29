@@ -319,9 +319,10 @@ const makeAnOffer = async (req, res) => {
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decodedToken.userId; // Assuming user ID is available from authentication middleware
 
+    console.log("offer_Description", offer_description)
     // Validate required fields
     if (!offer_price) {
-      throw new CustomError(400, "Offer price and description are required");
+      throw new CustomError(400, "Offer price required");
     }
 
     // Fetch the product to ensure it exists
@@ -344,7 +345,7 @@ const makeAnOffer = async (req, res) => {
       product: productId,
       user: userId,
       price: offer_price,
-      description: offer_description  !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
+      description: offer_description !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
     });
 
     // Initial offer message
@@ -358,7 +359,7 @@ const makeAnOffer = async (req, res) => {
         product_image: product.images[0], // Assuming `image` is a field in the product schema
         product_actual_price: product.price,
         status: offer?.status,
-        offer_description,
+        offer_description: offer_description !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
       },
       createdAt: new Date(),
     };
@@ -454,7 +455,7 @@ const makeAnOfferForBundle = async (req, res) => {
         // product_image: product.images[0], // Assuming `image` is a field in the product schema
         bundle_actual_price: product.totalAmount,
         status: offer?.status,
-        offer_description,
+        offer_description:  offer_description  !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
         productsList: productsList,
       },
       createdAt: new Date(),
