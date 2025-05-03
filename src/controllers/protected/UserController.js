@@ -956,6 +956,26 @@ const softDeleteAccount = async (req, res) => {
   }
 };
 
+const deleteAddress = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+    const { addressId } = req.params;
+
+    // Find and delete the address
+    const deletedAddress = await Address.findOneAndDelete({ _id: addressId, userId });
+    
+    if (!deletedAddress) {
+      throw new CustomError(404, 'Address not found');
+    }
+
+    ResponseHandler.success(res, { message: 'Address deleted successfully' }, 200);
+  } catch (error) {
+    ErrorHandler.handleError(error, res);
+  }
+};
+
 module.exports = {
-  getProfile, getUsersProfile, getRecentOrders, updateOrderReview, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, addOrEditUserAddress, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, getAddressList, setPrimaryAddress, softDeleteAccount
+  getProfile, getUsersProfile, getRecentOrders, updateOrderReview, getUserRepository, editUserProfile, checkPassword, createChatWithCoach, addOrEditUserAddress, sendOtpVerificationOnEmail, logout, getSidebarData, saveSidebarData, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, getAddressList, setPrimaryAddress, softDeleteAccount, deleteAddress
 };

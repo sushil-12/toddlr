@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyToken } = require('../middleware/authMiddleware');
-const { getProfile, checkPassword, sendOtpVerificationOnEmail, logout, saveSidebarData, getSidebarData, verifyEmail, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, editUserProfile, createChatWithCoach, getRecentOrders, updateOrderReview, addOrEditUserAddress, getAddressList, setPrimaryAddress, softDeleteAccount } = require('../controllers/protected/UserController');
+const { getProfile, checkPassword, sendOtpVerificationOnEmail, logout, saveSidebarData, getSidebarData, verifyEmail, cancelEmailChangeRequest, createOrEditUser, getUserProfile, getAllUser, deleteUser, editUserProfile, createChatWithCoach, getRecentOrders, updateOrderReview, addOrEditUserAddress, getAddressList, setPrimaryAddress, softDeleteAccount, deleteAddress } = require('../controllers/protected/UserController');
 const { uploadMediaToLibrary, deleteMedia } = require('../controllers/common/FileUploader');
 const { getAllMedia, editMedia, getAllImages } = require('../controllers/common/MediaOperations');
 const { createEditPost, getAllPosts, getPostById, deletePost, quickEditPost, getAllPostTypesAndPages, listFiles } = require('../controllers/protected/PostOperations');
@@ -25,6 +25,7 @@ router.post('/update-profile', editUserProfile);
 router.post('/add-edit-address', addOrEditUserAddress);
 router.get('/get-address-lists', getAddressList);
 router.put('/make-address-primary/:addressId', setPrimaryAddress);
+router.delete('/delete-address/:addressId', deleteAddress);
 router.delete('/delete-my-account', softDeleteAccount);
 
 router.get('/sign-out', logout);
