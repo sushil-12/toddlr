@@ -963,6 +963,11 @@ const deleteAddress = async (req, res) => {
     const userId = decodedToken.userId;
     const { addressId } = req.params;
 
+    // Validate addressId
+    if (!addressId) {
+      throw new CustomError(400, 'Address ID is required');
+    }
+
     // Find and delete the address
     const deletedAddress = await Address.findOneAndDelete({ _id: addressId, userId });
     
@@ -970,7 +975,15 @@ const deleteAddress = async (req, res) => {
       throw new CustomError(404, 'Address not found');
     }
 
-    ResponseHandler.success(res, { message: 'Address deleted successfully' }, 200);
+    // Return a consistent response structure
+    ResponseHandler.success(res, { 
+      success: true,
+      message: 'Address deleted successfully',
+      data: {
+        addressId: deletedAddress._id,
+        deletedAt: new Date()
+      }
+    }, 200);
   } catch (error) {
     ErrorHandler.handleError(error, res);
   }

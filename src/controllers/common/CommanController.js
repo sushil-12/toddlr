@@ -280,7 +280,7 @@ const getUserChats = async (req, res) => {
                 content: recentMessage.content,
                 createdAt: recentMessage.createdAt,
               }
-            : null,
+            : "",
           unreadMessageCount,
         };
       })
