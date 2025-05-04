@@ -33,6 +33,7 @@ const createAndUpdateProduct = async (req, res) => {
       condition,
       occasion,
       shareWith,
+      ecoFriendly,
     } = req.body;
 
     let product;
@@ -55,6 +56,7 @@ const createAndUpdateProduct = async (req, res) => {
           occasion,
           createdBy,
           shareWith,
+          ecoFriendly,
         },
         { new: true, runValidators: true }, // Options to return updated doc and validate
       );
@@ -87,6 +89,7 @@ const createAndUpdateProduct = async (req, res) => {
         occasion,
         createdBy,
         shareWith,
+        ecoFriendly,
       });
 
       const savedProduct = await product.save();
@@ -231,18 +234,67 @@ const getProducts = async (req, res) => {
 
     // Fetch wishlisted product IDs directly from the User model
     const user = await User.findOne({ _id: userId }).select("wishlist").lean();
-    console.log(user.wishlist);
     const wishlistedProductIds = user?.wishlist || [];
-    console.log(wishlistedProductIds, "t");
-    // Mark products as wishlisted
-    products.docs = products.docs.map((product) => {
-      // Convert product._id to string for easier logging
-      const productIdString = product._id.toString(); // Convert product._id to string for comparison
 
-      // Check if the product is in the wishlistedProductIds array
-      product.wishlisted = wishlistedProductIds.some((wishlistId) => {
-        return wishlistId.toString() === productIdString; // Ensure both are strings for comparison
-      });
+    // Get trending products (products with most views in last 7 days)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const trendingProducts = await Product.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sevenDaysAgo },
+          deletedAt: null
+        }
+      },
+      {
+        $group: {
+          _id: "$_id",
+          viewCount: { $sum: "$views" }
+        }
+      },
+      {
+        $sort: { viewCount: -1 }
+      },
+      {
+        $limit: 10
+      }
+    ]);
+    const trendingProductIds = trendingProducts.map(p => p._id.toString());
+    const tags = [];
+    // Mark products with tags
+    products.docs = products.docs.map((product) => {
+      const productIdString = product._id.toString();
+      
+      // Check if product is wishlisted
+      product.wishlisted = wishlistedProductIds.some(
+        (wishlistId) => wishlistId.toString() === productIdString
+      );
+
+      // Create tags array
+     
+      
+      // Check if product is trending
+      if (trendingProductIds.includes(productIdString)) {
+        tags.push('trending');
+      }
+      
+      // Check if product is new (created within 24 hours)
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      if (new Date(product.createdAt) > oneDayAgo) {
+        tags.push('new');
+      }
+      
+      // Check if product is exclusive for the user
+      if (product.createdBy.toString() === userId) {
+        tags.push('exclusive_for_you');
+      }
+      
+      // Check if product is eco-friendly
+      if (product.ecoFriendly) {
+        tags.push('eco_friendly');
+      }
+
+      // Add tags to product
+      product.tags = tags;
 
       // Handle reservedAt field logic
       if (
@@ -258,6 +310,8 @@ const getProducts = async (req, res) => {
     if (wishlisted === 'true') {
       products.docs = products.docs.filter(product => product.wishlisted === true);
     }
+
+    
 
     // Respond with the products data
     return ResponseHandler.success(
@@ -345,7 +399,7 @@ const makeAnOffer = async (req, res) => {
       product: productId,
       user: userId,
       price: offer_price,
-      description: offer_description !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
+      description: offer_description !='' ? offer_description : `Hi ${seller.username}! I'd like to make an offer on this item:`,
     });
 
     // Initial offer message
@@ -359,7 +413,7 @@ const makeAnOffer = async (req, res) => {
         product_image: product.images[0], // Assuming `image` is a field in the product schema
         product_actual_price: product.price,
         status: offer?.status,
-        offer_description: offer_description !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
+        offer_description: offer_description !='' ? offer_description : `Hi ${seller.username}! I'd like to make an offer on this item:`,
       },
       createdAt: new Date(),
     };
@@ -440,7 +494,7 @@ const makeAnOfferForBundle = async (req, res) => {
       bundle: bundleId,
       user: userId,
       price: offer_price,
-      description: offer_description  !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
+      description: offer_description  !='' ? offer_description : `Hi ${seller.username}! I'd like to make an offer on this item:`,
     });
 
     // Initial offer message
@@ -455,7 +509,7 @@ const makeAnOfferForBundle = async (req, res) => {
         // product_image: product.images[0], // Assuming `image` is a field in the product schema
         bundle_actual_price: product.totalAmount,
         status: offer?.status,
-        offer_description:  offer_description  !='' ? offer_description : `Hi ${seller.username}! I’d like to make an offer on this item:`,
+        offer_description:  offer_description  !='' ? offer_description : `Hi ${seller.username}! I'd like to make an offer on this item:`,
         productsList: productsList,
       },
       createdAt: new Date(),

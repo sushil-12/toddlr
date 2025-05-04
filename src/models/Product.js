@@ -88,9 +88,27 @@ const productSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    views: {
+        type: Number,
+        default: 0
+    },
+    ecoFriendly: {
+        type: Boolean,
+        default: false
+    },
+    tags:{
+        type: Array,
+        default:[],
+    }
 });
 
 productSchema.plugin(mongoosePaginate);
+
+// Add method to increment views
+productSchema.methods.incrementViews = async function() {
+    this.views += 1;
+    await this.save();
+};
 
 const Product = mongoose.model("Product", productSchema);
 module.exports = Product;
